@@ -1,796 +1,547 @@
 <!DOCTYPE html>
-
 <html lang="pl">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width, initial-scale=1.0"
-
->
-
-<title>Panel sterowania</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Status drzwi</title>
 
 <style>
-
 * {
     box-sizing: border-box;
 }
 
-
-html,
-body {
+html, body {
     margin: 0;
-    min-height: 100%;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
 }
-
 
 body {
-
-    font-family: Arial, sans-serif;
-
-    background:
-        radial-gradient(
-            circle at top left,
-            #374151,
-            transparent 40%
-        ),
-        linear-gradient(
-            135deg,
-            #111827,
-            #030712
-        );
-
+    background: #151515;
     color: white;
-
-    min-height: 100vh;
-
-    padding: 20px;
+    transition:
+        background 0.8s cubic-bezier(.22,1,.36,1),
+        color 0.5s ease;
 }
 
+/* =========================
+   GŁÓWNY EKRAN
+========================= */
 
-/* =================================
-   GŁÓWNY KONTENER
-================================= */
+.screen {
+    width: 100vw;
+    height: 100vh;
 
-.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 
-    width: 100%;
+    position: relative;
 
-    max-width: 650px;
-
-    margin: 0 auto;
-
+    transition:
+        opacity 0.35s ease,
+        transform 0.8s cubic-bezier(.22,1,.36,1),
+        filter 0.5s ease;
 }
 
+/* =========================
+   NORMALNY
+========================= */
 
-/* =================================
-   PANEL
-================================= */
-
-.panel {
-
-    background: rgba(31, 41, 55, 0.95);
-
-    border: 1px solid rgba(255,255,255,0.08);
-
-    border-radius: 25px;
-
-    padding: 30px;
-
-    box-shadow:
-        0 25px 70px
-        rgba(0,0,0,0.45);
-
+body.closed {
+    background:
+        radial-gradient(circle at center, #ff4545 0%, #d40000 55%, #850000 100%);
 }
 
+body.open {
+    background:
+        radial-gradient(circle at center, #35e879 0%, #08a947 55%, #006d2c 100%);
+}
 
-/* =================================
-   NAGŁÓWEK
-================================= */
+body.closed .main-icon {
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,.25));
+}
 
-h1 {
+body.open .main-icon {
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,.2));
+}
 
+.main-icon {
+    font-size: clamp(90px, 15vw, 190px);
+    line-height: 1;
+    margin-bottom: 25px;
+
+    animation: iconAppear .7s cubic-bezier(.22,1,.36,1);
+}
+
+.status {
+    font-size: clamp(50px, 9vw, 125px);
+    font-weight: 900;
+    letter-spacing: -4px;
+    text-align: center;
+    text-shadow: 0 8px 30px rgba(0,0,0,.2);
+
+    animation: statusAppear .65s cubic-bezier(.22,1,.36,1);
+}
+
+.message {
+    margin-top: 18px;
+    font-size: clamp(18px, 3vw, 34px);
+    font-weight: 600;
+    opacity: .9;
     text-align: center;
 
-    margin-top: 0;
-
-    margin-bottom: 30px;
-
-    font-size: 30px;
-
+    animation: messageAppear .7s ease;
 }
 
+/* =========================
+   NAZWA TRYBU
+========================= */
 
-/* =================================
-   INPUTY
-================================= */
+.mode-name {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
 
-input {
+    font-size: clamp(15px, 2vw, 23px);
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
 
-    width: 100%;
+    opacity: .75;
 
-    padding: 15px;
+    transition:
+        opacity .4s ease,
+        transform .5s ease;
+}
 
-    margin-top: 10px;
+.mode-name.animate {
+    animation: modeChange .7s cubic-bezier(.22,1,.36,1);
+}
 
+/* =========================
+   AWARIA
+========================= */
+
+body.malfunction {
+    background:
+        repeating-linear-gradient(
+            0deg,
+            #090909 0px,
+            #090909 3px,
+            #151515 4px,
+            #151515 7px
+        );
+
+    animation: malfunctionBg 0.15s infinite;
+}
+
+body.malfunction .screen {
+    filter: contrast(1.3);
+}
+
+body.malfunction .main-icon {
+    animation:
+        glitchIcon .2s infinite,
+        iconAppear .7s cubic-bezier(.22,1,.36,1);
+}
+
+body.malfunction .status {
+    text-shadow:
+        4px 0 #ff0000,
+        -4px 0 #00ffff,
+        0 0 25px rgba(255,255,255,.3);
+
+    animation:
+        glitchText .18s infinite,
+        statusAppear .65s cubic-bezier(.22,1,.36,1);
+}
+
+/* =========================
+   AWARYJNY
+========================= */
+
+body.emergency {
+    background:
+        radial-gradient(
+            circle at center,
+            #ffe600 0%,
+            #ff9d00 40%,
+            #d90000 100%
+        );
+}
+
+body.emergency .screen {
+    animation: emergencyPulse 1.5s infinite;
+}
+
+body.emergency .status {
+    text-shadow:
+        0 0 20px rgba(255,255,255,.7),
+        0 8px 30px rgba(0,0,0,.25);
+}
+
+body.emergency .mode-name {
+    opacity: 1;
+}
+
+/* =========================
+   EWAKUACJA
+========================= */
+
+body.evacuation {
+    background:
+        linear-gradient(
+            135deg,
+            #00a844,
+            #00d96b,
+            #007a34
+        );
+
+    background-size: 200% 200%;
+
+    animation: evacuationBg 5s ease infinite;
+}
+
+body.evacuation .status {
+    font-size: clamp(45px, 8vw, 110px);
+    text-shadow: 0 8px 30px rgba(0,0,0,.25);
+}
+
+body.evacuation .main-icon {
+    animation:
+        evacuationIcon 1s infinite alternate,
+        iconAppear .7s cubic-bezier(.22,1,.36,1);
+}
+
+/* =========================
+   LOCKDOWN
+========================= */
+
+body.lockdown {
+    background:
+        radial-gradient(
+            circle at center,
+            #5d0000 0%,
+            #240000 55%,
+            #080000 100%
+        );
+}
+
+body.lockdown .status {
+    letter-spacing: 1px;
+    text-transform: uppercase;
+
+    text-shadow:
+        0 0 15px rgba(255,0,0,.8),
+        0 8px 35px rgba(0,0,0,.5);
+}
+
+body.lockdown .mode-name {
+    opacity: 1;
+    color: #ff5c5c;
+}
+
+/* =========================
+   ANIMACJE ZMIANY
+========================= */
+
+.screen.transitioning {
+    animation: screenTransition .75s cubic-bezier(.22,1,.36,1);
+}
+
+@keyframes screenTransition {
+    0% {
+        opacity: .25;
+        transform: scale(.94);
+        filter: blur(12px);
+    }
+
+    55% {
+        opacity: 1;
+        transform: scale(1.025);
+        filter: blur(0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes iconAppear {
+    0% {
+        opacity: 0;
+        transform: scale(.55) translateY(25px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes statusAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes messageAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    100% {
+        opacity: .9;
+        transform: translateY(0);
+    }
+}
+
+@keyframes modeChange {
+    0% {
+        opacity: 0;
+        transform:
+            translateX(-50%)
+            translateY(12px);
+    }
+
+    100% {
+        opacity: .75;
+        transform:
+            translateX(-50%)
+            translateY(0);
+    }
+}
+
+/* =========================
+   SPECJALNE
+========================= */
+
+@keyframes emergencyPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.01);
+    }
+}
+
+@keyframes evacuationBg {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes evacuationIcon {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes malfunctionBg {
+    0% {
+        transform: translate(0);
+    }
+
+    25% {
+        transform: translate(1px, -1px);
+    }
+
+    50% {
+        transform: translate(-1px, 1px);
+    }
+
+    75% {
+        transform: translate(1px, 1px);
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+@keyframes glitchIcon {
+    0% {
+        transform: translate(0);
+    }
+
+    25% {
+        transform: translate(4px, -2px);
+    }
+
+    50% {
+        transform: translate(-4px, 2px);
+    }
+
+    75% {
+        transform: translate(2px, 3px);
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+@keyframes glitchText {
+    0% {
+        transform: translate(0);
+    }
+
+    30% {
+        transform: translate(-3px, 1px);
+    }
+
+    60% {
+        transform: translate(3px, -1px);
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+/* =========================
+   KARTA
+========================= */
+
+.card-area {
+    position: absolute;
+    bottom: 90px;
+}
+
+.card-button {
     border: none;
+    border-radius: 18px;
 
-    border-radius: 12px;
+    padding: 18px 30px;
 
-    background: #111827;
+    background: rgba(255,255,255,.95);
+    color: #111;
 
-    color: white;
+    font-size: 20px;
+    font-weight: 800;
 
-    font-size: 17px;
-
-    outline: none;
-
-    border: 1px solid #374151;
-
-}
-
-
-input:focus {
-
-    border-color: #60a5fa;
-
-}
-
-
-/* =================================
-   PRZYCISKI
-================================= */
-
-button {
-
-    width: 100%;
-
-    padding: 17px;
-
-    margin-top: 12px;
-
-    border: none;
-
-    border-radius: 14px;
-
-    color: white;
-
-    font-size: 18px;
-
-    font-weight: bold;
+    box-shadow:
+        0 12px 35px rgba(0,0,0,.25);
 
     cursor: pointer;
 
     transition:
-        transform .15s,
-        filter .15s;
-
+        transform .2s ease,
+        box-shadow .2s ease;
 }
 
-
-button:hover {
-
-    filter: brightness(1.1);
-
-    transform: translateY(-1px);
-
+.card-button:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 16px 40px rgba(0,0,0,.3);
 }
 
-
-button:active {
-
-    transform: scale(.98);
-
+.card-button:active {
+    transform: scale(.96);
 }
-
-
-/* =================================
-   LOGOWANIE
-================================= */
-
-.login-button {
-
-    background:
-        linear-gradient(
-            135deg,
-            #3b82f6,
-            #1d4ed8
-        );
-
-}
-
-
-/* =================================
-   OTWARTE
-================================= */
-
-.open-button {
-
-    background:
-        linear-gradient(
-            135deg,
-            #22c55e,
-            #15803d
-        );
-
-}
-
-
-/* =================================
-   ZAMKNIĘTE
-================================= */
-
-.close-button {
-
-    background:
-        linear-gradient(
-            135deg,
-            #ef4444,
-            #991b1b
-        );
-
-}
-
-
-/* =================================
-   TRYBY
-================================= */
-
-.mode-button {
-
-    background: #374151;
-
-}
-
-
-.mode-button.normal {
-
-    background:
-        linear-gradient(
-            135deg,
-            #64748b,
-            #334155
-        );
-
-}
-
-
-.mode-button.emergency {
-
-    background:
-        linear-gradient(
-            135deg,
-            #f59e0b,
-            #b45309
-        );
-
-}
-
-
-.mode-button.evacuation {
-
-    background:
-        linear-gradient(
-            135deg,
-            #22c55e,
-            #15803d
-        );
-
-}
-
-
-.mode-button.lockdown {
-
-    background:
-        linear-gradient(
-            135deg,
-            #dc2626,
-            #450a0a
-        );
-
-}
-
-
-.mode-button.malfunction {
-
-    background:
-        linear-gradient(
-            135deg,
-            #6b7280,
-            #111827
-        );
-
-}
-
-
-/* =================================
-   WYLOGUJ
-================================= */
-
-.logout-button {
-
-    background: #1f2937;
-
-    border:
-        1px solid
-        #4b5563;
-
-}
-
-
-/* =================================
-   AKTUALNY STATUS
-================================= */
-
-.status-box {
-
-    background: #111827;
-
-    border-radius: 18px;
-
-    padding: 25px;
-
-    text-align: center;
-
-    margin-bottom: 25px;
-
-}
-
-
-.status-label {
-
-    color: #9ca3af;
-
-    font-size: 14px;
-
-    margin-bottom: 8px;
-
-}
-
-
-.status {
-
-    font-size: 34px;
-
-    font-weight: 900;
-
-}
-
-
-.status.open {
-
-    color: #4ade80;
-
-}
-
-
-.status.closed {
-
-    color: #f87171;
-
-}
-
-
-/* =================================
-   SEKCJE
-================================= */
-
-.section {
-
-    margin-top: 25px;
-
-    padding-top: 25px;
-
-    border-top:
-        1px solid
-        rgba(255,255,255,.08);
-
-}
-
-
-.section-title {
-
-    font-size: 18px;
-
-    font-weight: bold;
-
-    margin-bottom: 10px;
-
-}
-
-
-/* =================================
-   CHECKBOX
-================================= */
-
-.checkbox {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    margin-top: 18px;
-
-    padding: 15px;
-
-    border-radius: 12px;
-
-    background: #111827;
-
-    cursor: pointer;
-
-}
-
-
-.checkbox input {
-
-    width: 20px;
-
-    height: 20px;
-
-    margin: 0;
-
-    cursor: pointer;
-
-}
-
-
-/* =================================
-   WYNIK
-================================= */
-
-#result {
-
-    min-height: 25px;
-
-    margin-top: 20px;
-
-    text-align: center;
-
-    font-weight: bold;
-
-}
-
-
-/* =================================
-   LOGIN RESULT
-================================= */
-
-#loginResult {
-
-    text-align: center;
-
-    margin-top: 15px;
-
-    color: #f87171;
-
-}
-
-
-/* =================================
-   UKRYWANIE
-================================= */
 
 .hidden {
-
-    display: none !important;
-
+    display: none;
 }
 
+/* =========================
+   ODŚWIEŻANIE
+========================= */
 
-/* =================================
-   INFORMACJE
-================================= */
+.refreshing::after {
+    content: "";
 
-.info {
+    position: fixed;
+    top: 0;
+    left: 0;
 
-    text-align: center;
+    width: 100%;
+    height: 4px;
 
-    margin-top: 20px;
+    background: rgba(255,255,255,.8);
 
-    color: #6b7280;
+    transform: translateX(-100%);
 
-    font-size: 13px;
-
+    animation: refreshLine .65s ease;
 }
 
+@keyframes refreshLine {
+    from {
+        transform: translateX(-100%);
+    }
 
+    to {
+        transform: translateX(100%);
+    }
+}
 </style>
-
 </head>
 
-<body>
+<body class="closed">
 
-<div class="container">
+<div class="screen" id="screen">
 
-<div class="panel">
-
-<!-- =================================
-     LOGOWANIE
-================================= -->
-
-<div id="loginPanel">
-
-```
-<h1>
-    PANEL STEROWANIA
-</h1>
-
-
-<input
-    id="email"
-    type="email"
-    placeholder="Adres e-mail"
-    autocomplete="email"
->
-
-
-<input
-    id="password"
-    type="password"
-    placeholder="Hasło"
-    autocomplete="current-password"
->
-
-
-<button
-    class="login-button"
-    onclick="zaloguj()"
->
-    ZALOGUJ
-</button>
-
-
-<div id="loginResult"></div>
-```
-
-</div>
-
-<!-- =================================
-     PANEL ADMINISTRATORA
-================================= -->
-
-<div
-    id="adminPanel"
-    class="hidden"
->
-
-```
-<h1>
-    STEROWANIE DRZWIAMI
-</h1>
-
-
-
-<!-- AKTUALNY STATUS -->
-
-<div class="status-box">
-
-    <div class="status-label">
-        AKTUALNY STATUS
+    <div class="main-icon" id="icon">
+        🔒
     </div>
 
-    <div
-        id="currentStatus"
-        class="status"
-    >
-        ŁADOWANIE...
+    <div class="status" id="status">
+        ZAMKNIĘTE
     </div>
 
-</div>
+    <div class="message" id="message"></div>
 
-
-
-<!-- =================================
-     OTWARCIE / ZAMKNIĘCIE
-================================= -->
-
-<div class="section">
-
-    <div class="section-title">
-        STATUS DRZWI
-    </div>
-
-
-    <button
-        class="open-button"
-        onclick="zmienStatus(true)"
-    >
-        🟢 OTWARTE
-    </button>
-
-
-    <button
-        class="close-button"
-        onclick="zmienStatus(false)"
-    >
-        🔴 ZAMKNIĘTE
-    </button>
-
-</div>
-
-
-
-<!-- =================================
-     TRYB SYSTEMU
-================================= -->
-
-<div class="section">
-
-    <div class="section-title">
-        TRYB SYSTEMU
-    </div>
-
-
-    <button
-        class="mode-button normal"
-        onclick="ustawTryb('normal')"
-    >
-        NORMALNY
-    </button>
-
-
-    <button
-        class="mode-button emergency"
-        onclick="ustawTryb('emergency')"
-    >
-        ⚠️ TRYB AWARYJNY
-    </button>
-
-
-    <button
-        class="mode-button evacuation"
-        onclick="ustawTryb('evacuation')"
-    >
-        🚪 EWAKUACJA
-    </button>
-
-
-    <button
-        class="mode-button lockdown"
-        onclick="ustawTryb('lockdown')"
-    >
-        🔒 LOCKDOWN
-    </button>
-
-
-    <button
-        class="mode-button malfunction"
-        onclick="ustawTryb('malfunction')"
-    >
-        ⚠️ AWARIA SYSTEMU
-    </button>
-
-</div>
-
-
-
-<!-- =================================
-     KARTA AWARYJNA
-================================= -->
-
-<div class="section">
-
-    <div class="section-title">
-        KARTA AWARYJNA
-    </div>
-
-
-    <label class="checkbox">
-
-        <input
-            id="emergencyCard"
-            type="checkbox"
+    <div class="card-area hidden" id="cardArea">
+        <button
+            class="card-button"
+            id="cardButton"
+            onclick="przylozKarte()"
         >
-
-        <span>
-            Włącz „PRZYŁÓŻ KARTĘ”
-            w trybie awaryjnym
-        </span>
-
-    </label>
-
-</div>
-
-
-
-<!-- =================================
-     TRYB / KOMUNIKAT
-================================= -->
-
-<div class="section">
-
-    <div class="section-title">
-        INFORMACJE NA EKRANIE
+            💳 PRZYŁÓŻ KARTĘ
+        </button>
     </div>
 
-
-    <input
-        id="mode"
-        type="text"
-        placeholder="Nazwa trybu"
-        value="Normalny"
-    >
-
-
-    <input
-        id="message"
-        type="text"
-        placeholder="Komunikat"
-    >
-
-
-    <button
-        class="login-button"
-        onclick="zapiszInformacje()"
-    >
-        ZAPISZ INFORMACJE
-    </button>
+    <div class="mode-name" id="modeName">
+        NORMALNY
+    </div>
 
 </div>
 
-
-
-<!-- WYNIK -->
-
-<div id="result"></div>
-
-
-
-<!-- WYLOGOWANIE -->
-
-<div class="section">
-
-    <button
-        class="logout-button"
-        onclick="wyloguj()"
-    >
-        WYLOGUJ
-    </button>
-
-</div>
-
-
-<div class="info">
-
-    Supabase • automatyczne odświeżanie
-
-</div>
-```
-
-</div>
-
-</div>
-
-</div>
-
-<!-- =================================
-     SUPABASE
-================================= -->
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-
-
-/* =================================
-   KONFIGURACJA
-================================= */
 
 const SUPABASE_URL =
     "https://hktkcaskbjaungabrilw.supabase.co";
 
-
 const SUPABASE_KEY =
     "sb_publishable_KLUzRcddw5TfzHtodWpxTQ_NCPjqU0F";
-
 
 const db =
     supabase.createClient(
@@ -799,471 +550,304 @@ const db =
     );
 
 
+const screen =
+    document.getElementById("screen");
 
-/* =================================
-   ELEMENTY
-================================= */
+const status =
+    document.getElementById("status");
 
-const loginPanel =
-    document.getElementById(
-        "loginPanel"
-    );
+const icon =
+    document.getElementById("icon");
 
+const message =
+    document.getElementById("message");
 
-const adminPanel =
-    document.getElementById(
-        "adminPanel"
-    );
+const modeName =
+    document.getElementById("modeName");
 
-
-const loginResult =
-    document.getElementById(
-        "loginResult"
-    );
+const cardArea =
+    document.getElementById("cardArea");
 
 
-const result =
-    document.getElementById(
-        "result"
-    );
+let previousState = null;
 
 
-const currentStatus =
-    document.getElementById(
-        "currentStatus"
-    );
+/* =========================
+   ODCZYT
+========================= */
+
+async function loadStatus() {
+
+    /*
+      Pasek animacji odświeżania.
+      Nie zmieniamy całego ekranu przy
+      każdym pollingu, bo wyglądałoby to
+      jak migająca katastrofa.
+    */
+
+    document.body.classList.remove("refreshing");
+
+    void document.body.offsetWidth;
+
+    document.body.classList.add("refreshing");
 
 
-
-/* =================================
-   LOGOWANIE
-================================= */
-
-async function zaloguj() {
-
-    const email =
-        document
-        .getElementById("email")
-        .value
-        .trim();
-
-
-    const password =
-        document
-        .getElementById("password")
-        .value;
-
-
-    if (!email || !password) {
-
-        loginResult.textContent =
-            "Wpisz e-mail i hasło.";
-
-        return;
-
-    }
-
-
-    loginResult.textContent =
-        "Logowanie...";
-
-
-    const {
-        data,
-        error
-    } =
-        await db.auth.signInWithPassword({
-
-            email: email,
-
-            password: password
-
-        });
-
-
-    if (error) {
-
-        console.error(error);
-
-        loginResult.textContent =
-            "❌ " +
-            error.message;
-
-        return;
-
-    }
-
-
-    loginResult.textContent = "";
-
-    pokazAdmin();
-
-}
-
-
-
-/* =================================
-   POKAŻ ADMINA
-================================= */
-
-function pokazAdmin() {
-
-    loginPanel
-        .classList
-        .add("hidden");
-
-
-    adminPanel
-        .classList
-        .remove("hidden");
-
-
-    pobierzStatus();
-
-}
-
-
-
-/* =================================
-   POBIERZ STATUS
-================================= */
-
-async function pobierzStatus() {
-
-    const {
-        data,
-        error
-    } =
+    const { data, error } =
         await db
-        .from("door_status")
-        .select(
-            "is_open,mode,message,system_mode,emergency_card_enabled,updated_at"
-        )
-        .eq("id", 1)
-        .single();
+            .from("door_status")
+            .select("*")
+            .eq("id", 1)
+            .single();
 
 
     if (error) {
 
-        console.error(error);
-
-        currentStatus.textContent =
-            "BŁĄD";
-
-
-        result.textContent =
-            "❌ " +
-            error.message;
+        console.error(
+            "Błąd Supabase:",
+            error
+        );
 
         return;
-
     }
 
 
-    currentStatus.textContent =
-        data.is_open
-            ? "🟢 OTWARTE"
-            : "🔴 ZAMKNIĘTE";
+    const newState = JSON.stringify(data);
 
 
-    currentStatus.className =
-        data.is_open
-            ? "status open"
-            : "status closed";
+    /*
+      Animacja główna tylko wtedy,
+      kiedy faktycznie coś się zmieniło.
+    */
+
+    if (previousState !== null &&
+        previousState !== newState) {
+
+        screen.classList.remove("transitioning");
+
+        void screen.offsetWidth;
+
+        screen.classList.add("transitioning");
 
 
-    document.getElementById(
-        "mode"
-    ).value =
-        data.mode || "";
+        modeName.classList.remove("animate");
 
+        void modeName.offsetWidth;
 
-    document.getElementById(
-        "message"
-    ).value =
-        data.message || "";
-
-
-    document.getElementById(
-        "emergencyCard"
-    ).checked =
-        data.emergency_card_enabled === true;
-
-}
-
-
-
-/* =================================
-   OTWARTE / ZAMKNIĘTE
-================================= */
-
-async function zmienStatus(
-    isOpen
-) {
-
-    result.textContent =
-        "Zapisywanie...";
-
-
-    const {
-        error
-    } =
-        await db
-        .from("door_status")
-        .update({
-
-            is_open: isOpen,
-
-            updated_at:
-                new Date().toISOString()
-
-        })
-        .eq("id", 1);
-
-
-    if (error) {
-
-        console.error(error);
-
-        result.textContent =
-            "❌ " +
-            error.message;
-
-        return;
-
+        modeName.classList.add("animate");
     }
 
 
-    result.textContent =
-        isOpen
-            ? "🟢 Ustawiono OTWARTE"
-            : "🔴 Ustawiono ZAMKNIĘTE";
+    previousState = newState;
 
 
-    await pobierzStatus();
-
+    updateScreen(data);
 }
 
 
+/* =========================
+   AKTUALIZACJA EKRANU
+========================= */
 
-/* =================================
-   ZMIANA TRYBU
-================================= */
-
-async function ustawTryb(
-    tryb
-) {
-
-    result.textContent =
-        "Zmienianie trybu...";
-
-
-    const karta =
-        document.getElementById(
-            "emergencyCard"
-        ).checked;
-
-
-    const {
-        error
-    } =
-        await db
-        .from("door_status")
-        .update({
-
-            system_mode: tryb,
-
-            emergency_card_enabled:
-                tryb === "emergency"
-                    ? karta
-                    : false,
-
-            updated_at:
-                new Date().toISOString()
-
-        })
-        .eq("id", 1);
-
-
-    if (error) {
-
-        console.error(error);
-
-        result.textContent =
-            "❌ " +
-            error.message;
-
-        return;
-
-    }
-
-
-    result.textContent =
-        "✅ Tryb zmieniony";
-
-
-    await pobierzStatus();
-
-}
-
-
-
-/* =================================
-   ZAPIS INFORMACJI
-================================= */
-
-async function zapiszInformacje() {
+function updateScreen(data) {
 
     const mode =
-        document
-        .getElementById("mode")
-        .value
-        .trim();
+        data.system_mode || "normal";
 
 
-    const message =
-        document
-        .getElementById("message")
-        .value
-        .trim();
+    document.body.classList.remove(
+        "open",
+        "closed",
+        "emergency",
+        "evacuation",
+        "lockdown",
+        "malfunction"
+    );
 
 
-    const karta =
-        document.getElementById(
-            "emergencyCard"
-        ).checked;
+    cardArea.classList.add("hidden");
 
 
-    result.textContent =
-        "Zapisywanie...";
+    /* NORMALNY */
 
+    if (mode === "normal") {
 
-    const {
-        error
-    } =
-        await db
-        .from("door_status")
-        .update({
+        if (data.is_open) {
 
-            mode: mode,
+            document.body.classList.add("open");
 
-            message: message,
+            icon.textContent = "🔓";
 
-            emergency_card_enabled:
-                karta,
+            status.textContent =
+                "OTWARTE";
 
-            updated_at:
-                new Date().toISOString()
+        } else {
 
-        })
-        .eq("id", 1);
+            document.body.classList.add("closed");
 
+            icon.textContent = "🔒";
 
-    if (error) {
-
-        console.error(error);
-
-        result.textContent =
-            "❌ " +
-            error.message;
-
-        return;
-
-    }
-
-
-    result.textContent =
-        "✅ Zapisano";
-
-
-    await pobierzStatus();
-
-}
-
-
-
-/* =================================
-   WYLOGOWANIE
-================================= */
-
-async function wyloguj() {
-
-    await db.auth.signOut();
-
-
-    adminPanel
-        .classList
-        .add("hidden");
-
-
-    loginPanel
-        .classList
-        .remove("hidden");
-
-
-    document.getElementById(
-        "password"
-    ).value = "";
-
-
-}
-
-
-
-/* =================================
-   SPRAWDZENIE SESJI
-================================= */
-
-async function sprawdzSesje() {
-
-    const {
-        data
-    } =
-        await db.auth.getSession();
-
-
-    if (data.session) {
-
-        pokazAdmin();
-
-    }
-
-}
-
-
-sprawdzSesje();
-
-
-
-/* =================================
-   AUTOMATYCZNE ODŚWIEŻANIE
-================================= */
-
-setInterval(
-
-    async function() {
-
-        const {
-            data
-        } =
-            await db.auth.getSession();
-
-
-        if (data.session) {
-
-            pobierzStatus();
-
+            status.textContent =
+                "ZAMKNIĘTE";
         }
 
-    },
+        message.textContent =
+            data.message || "";
 
+        modeName.textContent =
+            "NORMALNY";
+    }
+
+
+    /* AWARYJNY */
+
+    else if (mode === "emergency") {
+
+        document.body.classList.add(
+            "emergency"
+        );
+
+        icon.textContent = "⚠️";
+
+        status.textContent =
+            data.is_open
+                ? "OTWARTE"
+                : "TRYB AWARYJNY";
+
+        message.textContent =
+            data.message ||
+            "Postępuj zgodnie z komunikatami";
+
+        modeName.textContent =
+            "AWARYJNY";
+
+
+        if (data.emergency_card_enabled) {
+
+            cardArea.classList.remove(
+                "hidden"
+            );
+        }
+    }
+
+
+    /* EWAKUACJA */
+
+    else if (mode === "evacuation") {
+
+        document.body.classList.add(
+            "evacuation"
+        );
+
+        icon.textContent = "🚪";
+
+        status.textContent =
+            "EWAKUACJA";
+
+        message.textContent =
+            data.message ||
+            "Opuść obiekt";
+
+        modeName.textContent =
+            "EWAKUACJA";
+    }
+
+
+    /* LOCKDOWN */
+
+    else if (mode === "lockdown") {
+
+        document.body.classList.add(
+            "lockdown"
+        );
+
+        icon.textContent = "⛔";
+
+        status.textContent =
+            "LOCKDOWN";
+
+        message.textContent =
+            data.message ||
+            "Dostęp zablokowany";
+
+        modeName.textContent =
+            "LOCKDOWN";
+    }
+
+
+    /* AWARIA */
+
+    else if (mode === "malfunction") {
+
+        document.body.classList.add(
+            "malfunction"
+        );
+
+        icon.textContent = "⚠️";
+
+        status.textContent =
+            "AWARIA";
+
+        message.textContent =
+            data.message ||
+            "System niedostępny";
+
+        modeName.textContent =
+            "AWARIA";
+    }
+}
+
+
+/* =========================
+   SYMULACJA KARTY
+========================= */
+
+function przylozKarte() {
+
+    /*
+      To jest wyłącznie animacja/UI.
+      Nie steruje żadnym fizycznym zamkiem.
+    */
+
+    cardArea.classList.add(
+        "hidden"
+    );
+
+    document.body.classList.remove(
+        "emergency"
+    );
+
+    document.body.classList.add(
+        "open"
+    );
+
+    icon.textContent =
+        "🔓";
+
+    status.textContent =
+        "OTWARTE";
+
+    message.textContent =
+        "KARTA ZAAKCEPTOWANA";
+}
+
+
+/* =========================
+   START
+========================= */
+
+loadStatus();
+
+
+/*
+  Odświeżanie danych co 2 sekundy.
+*/
+
+setInterval(
+    loadStatus,
     2000
-
 );
-
 
 </script>
 
 </body>
-
 </html>
