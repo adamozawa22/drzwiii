@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Status</title>
+<title>Status drzwi</title>
 
 <style>
 * {
@@ -22,22 +22,62 @@ body {
     font-family: Arial, sans-serif;
     color: white;
     overflow: hidden;
-    transition: background 0.8s ease;
+
+    transition:
+        background 0.8s ease,
+        opacity 0.3s ease;
 }
+
+/* =========================
+   ZAMKNIĘTE
+========================= */
 
 body.closed {
     background:
-        radial-gradient(circle at top left, #ff4b4b 0%, transparent 45%),
-        radial-gradient(circle at bottom right, #650000 0%, transparent 55%),
-        linear-gradient(135deg, #ff0000, #7a0000);
+        radial-gradient(
+            circle at 15% 10%,
+            rgba(255, 100, 100, 0.8),
+            transparent 40%
+        ),
+        radial-gradient(
+            circle at 85% 90%,
+            rgba(100, 0, 0, 0.9),
+            transparent 50%
+        ),
+        linear-gradient(
+            135deg,
+            #ff1a1a,
+            #8b0000
+        );
 }
+
+/* =========================
+   OTWARTE
+========================= */
 
 body.open {
     background:
-        radial-gradient(circle at top left, #6cff8a 0%, transparent 45%),
-        radial-gradient(circle at bottom right, #006b2c 0%, transparent 55%),
-        linear-gradient(135deg, #00c853, #006b27);
+        radial-gradient(
+            circle at 15% 10%,
+            rgba(120, 255, 150, 0.8),
+            transparent 40%
+        ),
+        radial-gradient(
+            circle at 85% 90%,
+            rgba(0, 100, 40, 0.9),
+            transparent 50%
+        ),
+        linear-gradient(
+            135deg,
+            #00e65c,
+            #007a32
+        );
 }
+
+
+/* =========================
+   STATUS
+========================= */
 
 #status {
     width: 100vw;
@@ -54,56 +94,142 @@ body.open {
     display: flex;
     flex-direction: column;
     align-items: center;
+
     gap: 20px;
+
+    animation: appear 0.5s ease;
 }
+
+@keyframes appear {
+
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+/* =========================
+   IKONA
+========================= */
 
 .icon {
-    font-size: clamp(100px, 20vw, 220px);
+    font-size: clamp(
+        100px,
+        20vw,
+        230px
+    );
+
     line-height: 1;
-    filter: drop-shadow(0 10px 25px rgba(0,0,0,0.25));
+
+    filter:
+        drop-shadow(
+            0 15px 30px
+            rgba(0,0,0,0.25)
+        );
 }
 
+
+/* =========================
+   NAPIS
+========================= */
+
 .status-text {
-    font-size: clamp(55px, 11vw, 150px);
+    font-size: clamp(
+        50px,
+        11vw,
+        150px
+    );
+
     font-weight: 900;
+
     letter-spacing: 5px;
-    text-shadow: 0 8px 25px rgba(0,0,0,0.25);
+
+    text-shadow:
+        0 10px 30px
+        rgba(0,0,0,0.3);
 }
+
+
+/* =========================
+   TRYB
+========================= */
 
 .mode {
     font-size: 20px;
+
     opacity: 0.8;
+
+    text-shadow:
+        0 4px 10px
+        rgba(0,0,0,0.2);
 }
 
-.hidden {
-    display: none;
-}
+
+/* =========================
+   BŁĄD
+========================= */
 
 #error {
     position: fixed;
+
     bottom: 15px;
     left: 15px;
+
     font-size: 12px;
+
     opacity: 0.5;
 }
+
+
+/* =========================
+   TELEFON
+========================= */
+
+@media (max-width: 600px) {
+
+    .status-text {
+        letter-spacing: 2px;
+    }
+
+    .mode {
+        font-size: 16px;
+    }
+}
+
 </style>
 </head>
 
+
 <body class="closed">
+
 
 <div id="status">
 
     <div class="status-content">
 
-        <div id="icon" class="icon">
+        <div
+            id="icon"
+            class="icon">
             🔴
         </div>
 
-        <div id="statusText" class="status-text">
+
+        <div
+            id="statusText"
+            class="status-text">
             ZAMKNIĘTE
         </div>
 
-        <div id="mode" class="mode">
+
+        <div
+            id="mode"
+            class="mode">
             Normalny
         </div>
 
@@ -111,95 +237,189 @@ body.open {
 
 </div>
 
+
 <div id="error"></div>
 
+
 <script>
+
+/* =================================
+   SUPABASE
+================================= */
 
 const SUPABASE_URL =
     "https://hktkcaskbjaungabrilw.supabase.co";
 
+
 const SUPABASE_KEY =
-    "TWOJ_ANON_KEY";
+    "sb_publishable_KLUzRcddw5TfzHtodWpxTQ_NCPjqU0F";
+
+
+/* =================================
+   ELEMENTY
+================================= */
+
+const icon =
+    document.getElementById("icon");
+
+const statusText =
+    document.getElementById("statusText");
+
+const mode =
+    document.getElementById("mode");
+
+const error =
+    document.getElementById("error");
 
 
 let poprzedniStan = null;
 
+
+/* =================================
+   POBIERANIE STATUSU
+================================= */
 
 async function pobierzStatus() {
 
     try {
 
         const response = await fetch(
+
             SUPABASE_URL +
-            "/rest/v1/door_status?id=eq.1&select=is_open,mode,message,updated_at",
+            "/rest/v1/door_status" +
+            "?id=eq.1" +
+            "&select=is_open,mode,message,updated_at",
+
             {
+
                 method: "GET",
 
                 headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": "Bearer " + SUPABASE_KEY
+
+                    "apikey":
+                        SUPABASE_KEY,
+
+                    "Authorization":
+                        "Bearer " +
+                        SUPABASE_KEY
+
                 },
 
                 cache: "no-store"
+
             }
+
         );
 
 
         if (!response.ok) {
-            throw new Error("Błąd Supabase");
+
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
+
         }
 
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
 
-        if (!data.length) {
-            throw new Error("Brak statusu");
+        if (
+            !Array.isArray(data) ||
+            data.length === 0
+        ) {
+
+            throw new Error(
+                "Nie znaleziono statusu"
+            );
+
         }
 
 
-        const status = data[0];
+        const status =
+            data[0];
 
 
         const stan =
             JSON.stringify(status);
 
 
-        if (stan === poprzedniStan) {
+        /*
+
+        Jeżeli nic się nie zmieniło,
+        nie robimy ponownie animacji.
+
+        */
+
+        if (
+            stan === poprzedniStan
+        ) {
+
             return;
+
         }
 
 
-        poprzedniStan = stan;
+        poprzedniStan =
+            stan;
 
 
         const otwarte =
             status.is_open === true;
 
 
+        /* =================================
+           KOLOR STRONY
+        ================================= */
+
         document.body.className =
-            otwarte ? "open" : "closed";
+            otwarte
+                ? "open"
+                : "closed";
 
 
-        document.getElementById("icon").textContent =
-            otwarte ? "🟢" : "🔴";
+        /* =================================
+           IKONA
+        ================================= */
+
+        icon.textContent =
+            otwarte
+                ? "🟢"
+                : "🔴";
 
 
-        document.getElementById("statusText").textContent =
-            otwarte ? "OTWARTE" : "ZAMKNIĘTE";
+        /* =================================
+           STATUS
+        ================================= */
+
+        statusText.textContent =
+            otwarte
+                ? "OTWARTE"
+                : "ZAMKNIĘTE";
 
 
-        document.getElementById("mode").textContent =
-            status.mode || "Normalny";
+        /* =================================
+           TRYB
+        ================================= */
+
+        mode.textContent =
+            status.mode || "";
 
 
-        document.getElementById("error").textContent = "";
+        error.textContent = "";
 
-    }
 
-    catch (error) {
+    } catch (err) {
 
-        document.getElementById("error").textContent =
+        console.error(
+            "Supabase:",
+            err
+        );
+
+
+        error.textContent =
             "Brak połączenia z serwerem";
 
     }
@@ -207,7 +427,18 @@ async function pobierzStatus() {
 }
 
 
+/* =================================
+   START
+================================= */
+
 pobierzStatus();
+
+
+/*
+
+Sprawdzamy co 2 sekundy.
+
+*/
 
 setInterval(
     pobierzStatus,
