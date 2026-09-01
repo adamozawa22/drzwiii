@@ -22,49 +22,42 @@ body {
     font-family: Arial, sans-serif;
     color: white;
     overflow: hidden;
-
-    transition:
-        background 0.8s ease,
-        opacity 0.3s ease;
+    transition: background 0.7s ease;
 }
 
-/* =========================
-   ZAMKNIĘTE
-========================= */
+/* NORMALNY - ZAMKNIĘTE */
 
 body.closed {
     background:
         radial-gradient(
             circle at 15% 10%,
-            rgba(255, 100, 100, 0.8),
+            rgba(255, 100, 100, .8),
             transparent 40%
         ),
         radial-gradient(
             circle at 85% 90%,
-            rgba(100, 0, 0, 0.9),
+            rgba(100, 0, 0, .9),
             transparent 50%
         ),
         linear-gradient(
             135deg,
             #ff1a1a,
-            #8b0000
+            #790000
         );
 }
 
-/* =========================
-   OTWARTE
-========================= */
+/* NORMALNY - OTWARTE */
 
 body.open {
     background:
         radial-gradient(
             circle at 15% 10%,
-            rgba(120, 255, 150, 0.8),
+            rgba(120, 255, 150, .8),
             transparent 40%
         ),
         radial-gradient(
             circle at 85% 90%,
-            rgba(0, 100, 40, 0.9),
+            rgba(0, 100, 40, .9),
             transparent 50%
         ),
         linear-gradient(
@@ -74,10 +67,54 @@ body.open {
         );
 }
 
+/* AWARYJNY */
 
-/* =========================
-   STATUS
-========================= */
+body.emergency {
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            #7cff9b,
+            transparent 40%
+        ),
+        linear-gradient(
+            135deg,
+            #00c853,
+            #006b2c
+        );
+}
+
+/* EWAKUACJA */
+
+body.evacuation {
+    background:
+        repeating-linear-gradient(
+            45deg,
+            #00a83b,
+            #00a83b 40px,
+            #00852f 40px,
+            #00852f 80px
+        );
+}
+
+/* LOCKDOWN */
+
+body.lockdown {
+    background:
+        radial-gradient(
+            circle at center,
+            #a00000,
+            transparent 55%
+        ),
+        #3b0000;
+}
+
+/* AWARIA SYSTEMU */
+
+body.malfunction {
+    background: #050505;
+}
+
+/* GŁÓWNY EKRAN */
 
 #status {
     width: 100vw;
@@ -90,128 +127,195 @@ body.open {
     text-align: center;
 }
 
-.status-content {
+.content {
     display: flex;
     flex-direction: column;
     align-items: center;
-
     gap: 20px;
 
-    animation: appear 0.5s ease;
+    padding: 30px;
 }
-
-@keyframes appear {
-
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-
-/* =========================
-   IKONA
-========================= */
 
 .icon {
-    font-size: clamp(
-        100px,
-        20vw,
-        230px
-    );
-
+    font-size: clamp(90px, 18vw, 220px);
     line-height: 1;
-
-    filter:
-        drop-shadow(
-            0 15px 30px
-            rgba(0,0,0,0.25)
-        );
 }
 
-
-/* =========================
-   NAPIS
-========================= */
-
-.status-text {
-    font-size: clamp(
-        50px,
-        11vw,
-        150px
-    );
-
+.title {
+    font-size: clamp(45px, 10vw, 140px);
     font-weight: 900;
-
     letter-spacing: 5px;
 
     text-shadow:
-        0 10px 30px
-        rgba(0,0,0,0.3);
+        0 10px 30px rgba(0,0,0,.3);
 }
 
-
-/* =========================
-   TRYB
-========================= */
-
-.mode {
-    font-size: 20px;
-
-    opacity: 0.8;
-
-    text-shadow:
-        0 4px 10px
-        rgba(0,0,0,0.2);
+.message {
+    font-size: clamp(18px, 3vw, 32px);
+    font-weight: bold;
+    max-width: 900px;
 }
 
+/* KARTA */
 
-/* =========================
-   BŁĄD
-========================= */
-
-#error {
+.card-area {
     position: fixed;
 
-    bottom: 15px;
-    left: 15px;
+    bottom: 30px;
+    left: 50%;
 
-    font-size: 12px;
+    transform: translateX(-50%);
 
-    opacity: 0.5;
+    width: min(90%, 500px);
+
+    padding: 20px;
+
+    border-radius: 20px;
+
+    background:
+        rgba(0,0,0,.3);
+
+    backdrop-filter: blur(10px);
 }
 
+.card-button {
+    width: 100%;
 
-/* =========================
-   TELEFON
-========================= */
+    padding: 20px;
 
-@media (max-width: 600px) {
+    border: 2px solid rgba(255,255,255,.6);
 
-    .status-text {
-        letter-spacing: 2px;
+    border-radius: 15px;
+
+    background: rgba(255,255,255,.12);
+
+    color: white;
+
+    font-size: 22px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.card-button:hover {
+    background: rgba(255,255,255,.25);
+}
+
+.card-button:active {
+    transform: scale(.97);
+}
+
+/* LOCKDOWN */
+
+.lock-icon {
+    font-size: clamp(80px, 16vw, 180px);
+}
+
+/* AWARIA */
+
+body.malfunction .content {
+    animation: shake .08s infinite;
+}
+
+body.malfunction .title {
+    text-shadow:
+        5px 0 red,
+        -5px 0 cyan;
+}
+
+body.malfunction::before {
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,.04),
+            rgba(255,255,255,.04) 2px,
+            transparent 2px,
+            transparent 5px
+        );
+
+    animation: scan .15s linear infinite;
+}
+
+body.malfunction::after {
+    content: "SYSTEM ERROR";
+
+    position: fixed;
+
+    top: 15px;
+    left: 15px;
+
+    font-family: monospace;
+
+    color: #ff3333;
+
+    font-size: 14px;
+
+    animation: blink .3s infinite;
+}
+
+@keyframes shake {
+
+    0% {
+        transform: translate(0,0);
     }
 
-    .mode {
-        font-size: 16px;
+    25% {
+        transform: translate(3px,-2px);
     }
+
+    50% {
+        transform: translate(-3px,2px);
+    }
+
+    75% {
+        transform: translate(2px,3px);
+    }
+
+    100% {
+        transform: translate(0,0);
+    }
+}
+
+@keyframes scan {
+
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(5px);
+    }
+}
+
+@keyframes blink {
+
+    50% {
+        opacity: 0;
+    }
+}
+
+.hidden {
+    display: none !important;
 }
 
 </style>
 </head>
 
-
 <body class="closed">
-
 
 <div id="status">
 
-    <div class="status-content">
+    <div class="content">
 
         <div
             id="icon"
@@ -219,18 +323,15 @@ body.open {
             🔴
         </div>
 
-
         <div
-            id="statusText"
-            class="status-text">
+            id="title"
+            class="title">
             ZAMKNIĘTE
         </div>
 
-
         <div
-            id="mode"
-            class="mode">
-            Normalny
+            id="message"
+            class="message">
         </div>
 
     </div>
@@ -238,46 +339,41 @@ body.open {
 </div>
 
 
-<div id="error"></div>
+<!-- KARTA AWARYJNA -->
+
+<div
+    id="cardArea"
+    class="card-area hidden">
+
+    <button
+        id="cardButton"
+        class="card-button"
+        onclick="przylozKarte()">
+
+        💳 PRZYŁÓŻ KARTĘ
+
+    </button>
+
+</div>
 
 
 <script>
 
-/* =================================
-   SUPABASE
-================================= */
-
 const SUPABASE_URL =
     "https://hktkcaskbjaungabrilw.supabase.co";
-
 
 const SUPABASE_KEY =
     "sb_publishable_KLUzRcddw5TfzHtodWpxTQ_NCPjqU0F";
 
 
-/* =================================
-   ELEMENTY
-================================= */
+let ostatniStatus = null;
 
-const icon =
-    document.getElementById("icon");
-
-const statusText =
-    document.getElementById("statusText");
-
-const mode =
-    document.getElementById("mode");
-
-const error =
-    document.getElementById("error");
+let kartaOdblokowana = false;
 
 
-let poprzedniStan = null;
-
-
-/* =================================
-   POBIERANIE STATUSU
-================================= */
+/* =========================
+   POBIERANIE
+========================= */
 
 async function pobierzStatus() {
 
@@ -288,37 +384,24 @@ async function pobierzStatus() {
             SUPABASE_URL +
             "/rest/v1/door_status" +
             "?id=eq.1" +
-            "&select=is_open,mode,message,updated_at",
+            "&select=*",
 
             {
-
-                method: "GET",
-
                 headers: {
-
-                    "apikey":
-                        SUPABASE_KEY,
-
+                    "apikey": SUPABASE_KEY,
                     "Authorization":
-                        "Bearer " +
-                        SUPABASE_KEY
-
+                        "Bearer " + SUPABASE_KEY
                 },
 
                 cache: "no-store"
-
             }
-
         );
 
 
         if (!response.ok) {
-
             throw new Error(
-                "HTTP " +
-                response.status
+                "HTTP " + response.status
             );
-
         }
 
 
@@ -326,119 +409,286 @@ async function pobierzStatus() {
             await response.json();
 
 
-        if (
-            !Array.isArray(data) ||
-            data.length === 0
-        ) {
-
+        if (!data.length) {
             throw new Error(
-                "Nie znaleziono statusu"
+                "Brak rekordu"
             );
-
         }
 
 
-        const status =
-            data[0];
+        const status = data[0];
 
 
-        const stan =
-            JSON.stringify(status);
+        ostatniStatus = status;
 
 
-        /*
-
-        Jeżeli nic się nie zmieniło,
-        nie robimy ponownie animacji.
-
-        */
-
-        if (
-            stan === poprzedniStan
-        ) {
-
-            return;
-
-        }
+        aktualizujEkran(status);
 
 
-        poprzedniStan =
-            stan;
+    } catch (error) {
 
-
-        const otwarte =
-            status.is_open === true;
-
-
-        /* =================================
-           KOLOR STRONY
-        ================================= */
-
-        document.body.className =
-            otwarte
-                ? "open"
-                : "closed";
-
-
-        /* =================================
-           IKONA
-        ================================= */
-
-        icon.textContent =
-            otwarte
-                ? "🟢"
-                : "🔴";
-
-
-        /* =================================
-           STATUS
-        ================================= */
-
-        statusText.textContent =
-            otwarte
-                ? "OTWARTE"
-                : "ZAMKNIĘTE";
-
-
-        /* =================================
-           TRYB
-        ================================= */
-
-        mode.textContent =
-            status.mode || "";
-
-
-        error.textContent = "";
-
-
-    } catch (err) {
-
-        console.error(
-            "Supabase:",
-            err
-        );
-
-
-        error.textContent =
-            "Brak połączenia z serwerem";
+        console.error(error);
 
     }
 
 }
 
 
-/* =================================
+/* =========================
+   AKTUALIZACJA EKRANU
+========================= */
+
+function aktualizujEkran(status) {
+
+    const mode =
+        status.system_mode || "normal";
+
+
+    document.body.className = "";
+
+
+    const cardArea =
+        document.getElementById(
+            "cardArea"
+        );
+
+
+    cardArea.classList.add(
+        "hidden"
+    );
+
+
+    /* NORMALNY */
+
+    if (mode === "normal") {
+
+        document.body.classList.add(
+            status.is_open
+                ? "open"
+                : "closed"
+        );
+
+
+        document.getElementById(
+            "icon"
+        ).textContent =
+            status.is_open
+                ? "🟢"
+                : "🔴";
+
+
+        document.getElementById(
+            "title"
+        ).textContent =
+            status.is_open
+                ? "OTWARTE"
+                : "ZAMKNIĘTE";
+
+
+        document.getElementById(
+            "message"
+        ).textContent =
+            status.message || "";
+
+
+        return;
+    }
+
+
+    /* AWARYJNY */
+
+    if (mode === "emergency") {
+
+        document.body.classList.add(
+            "emergency"
+        );
+
+
+        document.getElementById(
+            "icon"
+        ).textContent =
+            "⚠️";
+
+
+        document.getElementById(
+            "title"
+        ).textContent =
+            "TRYB AWARYJNY";
+
+
+        document.getElementById(
+            "message"
+        ).textContent =
+            status.message ||
+            "Przygotuj kartę dostępu";
+
+
+        if (
+            status.emergency_card_enabled
+        ) {
+
+            cardArea.classList.remove(
+                "hidden"
+            );
+
+        }
+
+
+        return;
+    }
+
+
+    /* EWAKUACJA */
+
+    if (mode === "evacuation") {
+
+        document.body.classList.add(
+            "evacuation"
+        );
+
+
+        document.getElementById(
+            "icon"
+        ).textContent =
+            "🚪";
+
+
+        document.getElementById(
+            "title"
+        ).textContent =
+            "EWAKUACJA";
+
+
+        document.getElementById(
+            "message"
+        ).textContent =
+            status.message ||
+            "DRZWI ODBLOKOWANE";
+
+
+        return;
+    }
+
+
+    /* LOCKDOWN */
+
+    if (mode === "lockdown") {
+
+        document.body.classList.add(
+            "lockdown"
+        );
+
+
+        document.getElementById(
+            "icon"
+        ).textContent =
+            "🔒";
+
+
+        document.getElementById(
+            "title"
+        ).textContent =
+            "LOCKDOWN";
+
+
+        document.getElementById(
+            "message"
+        ).textContent =
+            status.message ||
+            "DOSTĘP ZABLOKOWANY";
+
+
+        return;
+    }
+
+
+    /* AWARIA */
+
+    if (mode === "malfunction") {
+
+        document.body.classList.add(
+            "malfunction"
+        );
+
+
+        document.getElementById(
+            "icon"
+        ).textContent =
+            "⚠️";
+
+
+        document.getElementById(
+            "title"
+        ).textContent =
+            "SYSTEM ERROR";
+
+
+        document.getElementById(
+            "message"
+        ).textContent =
+            "SYSTEM UNAVAILABLE";
+
+
+        return;
+    }
+
+}
+
+
+/* =========================
+   KARTA
+========================= */
+
+function przylozKarte() {
+
+    if (
+        !ostatniStatus ||
+        !ostatniStatus.emergency_card_enabled
+    ) {
+        return;
+    }
+
+
+    kartaOdblokowana = true;
+
+
+    document.getElementById(
+        "icon"
+    ).textContent =
+        "🟢";
+
+
+    document.getElementById(
+        "title"
+    ).textContent =
+        "OTWARTE";
+
+
+    document.getElementById(
+        "message"
+    ).textContent =
+        "KARTA ZAAKCEPTOWANA";
+
+
+    document.body.className =
+        "open";
+
+
+    document.getElementById(
+        "cardArea"
+    ).classList.add(
+        "hidden"
+    );
+
+}
+
+
+/* =========================
    START
-================================= */
+========================= */
 
 pobierzStatus();
 
-
-/*
-
-Sprawdzamy co 2 sekundy.
-
-*/
 
 setInterval(
     pobierzStatus,
