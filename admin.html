@@ -1,35 +1,1269 @@
-<div style="margin-top:20px">
+<!DOCTYPE html>
+
+<html lang="pl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
+>
+
+<title>Panel sterowania</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+}
+
+
+body {
+
+    font-family: Arial, sans-serif;
+
+    background:
+        radial-gradient(
+            circle at top left,
+            #374151,
+            transparent 40%
+        ),
+        linear-gradient(
+            135deg,
+            #111827,
+            #030712
+        );
+
+    color: white;
+
+    min-height: 100vh;
+
+    padding: 20px;
+}
+
+
+/* =================================
+   GŁÓWNY KONTENER
+================================= */
+
+.container {
+
+    width: 100%;
+
+    max-width: 650px;
+
+    margin: 0 auto;
+
+}
+
+
+/* =================================
+   PANEL
+================================= */
+
+.panel {
+
+    background: rgba(31, 41, 55, 0.95);
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    border-radius: 25px;
+
+    padding: 30px;
+
+    box-shadow:
+        0 25px 70px
+        rgba(0,0,0,0.45);
+
+}
+
+
+/* =================================
+   NAGŁÓWEK
+================================= */
+
+h1 {
+
+    text-align: center;
+
+    margin-top: 0;
+
+    margin-bottom: 30px;
+
+    font-size: 30px;
+
+}
+
+
+/* =================================
+   INPUTY
+================================= */
+
+input {
+
+    width: 100%;
+
+    padding: 15px;
+
+    margin-top: 10px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #111827;
+
+    color: white;
+
+    font-size: 17px;
+
+    outline: none;
+
+    border: 1px solid #374151;
+
+}
+
+
+input:focus {
+
+    border-color: #60a5fa;
+
+}
+
+
+/* =================================
+   PRZYCISKI
+================================= */
+
+button {
+
+    width: 100%;
+
+    padding: 17px;
+
+    margin-top: 12px;
+
+    border: none;
+
+    border-radius: 14px;
+
+    color: white;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        transform .15s,
+        filter .15s;
+
+}
+
+
+button:hover {
+
+    filter: brightness(1.1);
+
+    transform: translateY(-1px);
+
+}
+
+
+button:active {
+
+    transform: scale(.98);
+
+}
+
+
+/* =================================
+   LOGOWANIE
+================================= */
+
+.login-button {
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #1d4ed8
+        );
+
+}
+
+
+/* =================================
+   OTWARTE
+================================= */
+
+.open-button {
+
+    background:
+        linear-gradient(
+            135deg,
+            #22c55e,
+            #15803d
+        );
+
+}
+
+
+/* =================================
+   ZAMKNIĘTE
+================================= */
+
+.close-button {
+
+    background:
+        linear-gradient(
+            135deg,
+            #ef4444,
+            #991b1b
+        );
+
+}
+
+
+/* =================================
+   TRYBY
+================================= */
+
+.mode-button {
+
+    background: #374151;
+
+}
+
+
+.mode-button.normal {
+
+    background:
+        linear-gradient(
+            135deg,
+            #64748b,
+            #334155
+        );
+
+}
+
+
+.mode-button.emergency {
+
+    background:
+        linear-gradient(
+            135deg,
+            #f59e0b,
+            #b45309
+        );
+
+}
+
+
+.mode-button.evacuation {
+
+    background:
+        linear-gradient(
+            135deg,
+            #22c55e,
+            #15803d
+        );
+
+}
+
+
+.mode-button.lockdown {
+
+    background:
+        linear-gradient(
+            135deg,
+            #dc2626,
+            #450a0a
+        );
+
+}
+
+
+.mode-button.malfunction {
+
+    background:
+        linear-gradient(
+            135deg,
+            #6b7280,
+            #111827
+        );
+
+}
+
+
+/* =================================
+   WYLOGUJ
+================================= */
+
+.logout-button {
+
+    background: #1f2937;
+
+    border:
+        1px solid
+        #4b5563;
+
+}
+
+
+/* =================================
+   AKTUALNY STATUS
+================================= */
+
+.status-box {
+
+    background: #111827;
+
+    border-radius: 18px;
+
+    padding: 25px;
+
+    text-align: center;
+
+    margin-bottom: 25px;
+
+}
+
+
+.status-label {
+
+    color: #9ca3af;
+
+    font-size: 14px;
+
+    margin-bottom: 8px;
+
+}
+
+
+.status {
+
+    font-size: 34px;
+
+    font-weight: 900;
+
+}
+
+
+.status.open {
+
+    color: #4ade80;
+
+}
+
+
+.status.closed {
+
+    color: #f87171;
+
+}
+
+
+/* =================================
+   SEKCJE
+================================= */
+
+.section {
+
+    margin-top: 25px;
+
+    padding-top: 25px;
+
+    border-top:
+        1px solid
+        rgba(255,255,255,.08);
+
+}
+
+
+.section-title {
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    margin-bottom: 10px;
+
+}
+
+
+/* =================================
+   CHECKBOX
+================================= */
+
+.checkbox {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-top: 18px;
+
+    padding: 15px;
+
+    border-radius: 12px;
+
+    background: #111827;
+
+    cursor: pointer;
+
+}
+
+
+.checkbox input {
+
+    width: 20px;
+
+    height: 20px;
+
+    margin: 0;
+
+    cursor: pointer;
+
+}
+
+
+/* =================================
+   WYNIK
+================================= */
+
+#result {
+
+    min-height: 25px;
+
+    margin-top: 20px;
+
+    text-align: center;
+
+    font-weight: bold;
+
+}
+
+
+/* =================================
+   LOGIN RESULT
+================================= */
+
+#loginResult {
+
+    text-align: center;
+
+    margin-top: 15px;
+
+    color: #f87171;
+
+}
+
+
+/* =================================
+   UKRYWANIE
+================================= */
+
+.hidden {
+
+    display: none !important;
+
+}
+
+
+/* =================================
+   INFORMACJE
+================================= */
+
+.info {
+
+    text-align: center;
+
+    margin-top: 20px;
+
+    color: #6b7280;
+
+    font-size: 13px;
+
+}
+
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="panel">
+
+<!-- =================================
+     LOGOWANIE
+================================= -->
+
+<div id="loginPanel">
+
+```
+<h1>
+    PANEL STEROWANIA
+</h1>
+
+
+<input
+    id="email"
+    type="email"
+    placeholder="Adres e-mail"
+    autocomplete="email"
+>
+
+
+<input
+    id="password"
+    type="password"
+    placeholder="Hasło"
+    autocomplete="current-password"
+>
+
+
+<button
+    class="login-button"
+    onclick="zaloguj()"
+>
+    ZALOGUJ
+</button>
+
+
+<div id="loginResult"></div>
+```
+
+</div>
+
+<!-- =================================
+     PANEL ADMINISTRATORA
+================================= -->
+
+<div
+    id="adminPanel"
+    class="hidden"
+>
+
+```
+<h1>
+    STEROWANIE DRZWIAMI
+</h1>
+
+
+
+<!-- AKTUALNY STATUS -->
+
+<div class="status-box">
+
+    <div class="status-label">
+        AKTUALNY STATUS
+    </div>
+
+    <div
+        id="currentStatus"
+        class="status"
+    >
+        ŁADOWANIE...
+    </div>
+
+</div>
+
+
+
+<!-- =================================
+     OTWARCIE / ZAMKNIĘCIE
+================================= -->
+
+<div class="section">
+
+    <div class="section-title">
+        STATUS DRZWI
+    </div>
+
 
     <button
-        onclick="ustawTryb('normal')">
+        class="open-button"
+        onclick="zmienStatus(true)"
+    >
+        🟢 OTWARTE
+    </button>
+
+
+    <button
+        class="close-button"
+        onclick="zmienStatus(false)"
+    >
+        🔴 ZAMKNIĘTE
+    </button>
+
+</div>
+
+
+
+<!-- =================================
+     TRYB SYSTEMU
+================================= -->
+
+<div class="section">
+
+    <div class="section-title">
+        TRYB SYSTEMU
+    </div>
+
+
+    <button
+        class="mode-button normal"
+        onclick="ustawTryb('normal')"
+    >
         NORMALNY
     </button>
 
-    <button
-        onclick="ustawTryb('emergency')">
-        ⚠️ AWARYJNY
-    </button>
 
     <button
-        onclick="ustawTryb('evacuation')">
+        class="mode-button emergency"
+        onclick="ustawTryb('emergency')"
+    >
+        ⚠️ TRYB AWARYJNY
+    </button>
+
+
+    <button
+        class="mode-button evacuation"
+        onclick="ustawTryb('evacuation')"
+    >
         🚪 EWAKUACJA
     </button>
 
+
     <button
-        onclick="ustawTryb('lockdown')">
+        class="mode-button lockdown"
+        onclick="ustawTryb('lockdown')"
+    >
         🔒 LOCKDOWN
     </button>
 
+
     <button
-        onclick="ustawTryb('malfunction')">
+        class="mode-button malfunction"
+        onclick="ustawTryb('malfunction')"
+    >
         ⚠️ AWARIA SYSTEMU
     </button>
 
 </div>
 
-<label style="display:block;margin-top:20px">
+
+
+<!-- =================================
+     KARTA AWARYJNA
+================================= -->
+
+<div class="section">
+
+    <div class="section-title">
+        KARTA AWARYJNA
+    </div>
+
+
+    <label class="checkbox">
+
+        <input
+            id="emergencyCard"
+            type="checkbox"
+        >
+
+        <span>
+            Włącz „PRZYŁÓŻ KARTĘ”
+            w trybie awaryjnym
+        </span>
+
+    </label>
+
+</div>
+
+
+
+<!-- =================================
+     TRYB / KOMUNIKAT
+================================= -->
+
+<div class="section">
+
+    <div class="section-title">
+        INFORMACJE NA EKRANIE
+    </div>
+
+
     <input
-        id="emergencyCard"
-        type="checkbox">
-    Włącz kartę w trybie awaryjnym
-</label>
+        id="mode"
+        type="text"
+        placeholder="Nazwa trybu"
+        value="Normalny"
+    >
+
+
+    <input
+        id="message"
+        type="text"
+        placeholder="Komunikat"
+    >
+
+
+    <button
+        class="login-button"
+        onclick="zapiszInformacje()"
+    >
+        ZAPISZ INFORMACJE
+    </button>
+
+</div>
+
+
+
+<!-- WYNIK -->
+
+<div id="result"></div>
+
+
+
+<!-- WYLOGOWANIE -->
+
+<div class="section">
+
+    <button
+        class="logout-button"
+        onclick="wyloguj()"
+    >
+        WYLOGUJ
+    </button>
+
+</div>
+
+
+<div class="info">
+
+    Supabase • automatyczne odświeżanie
+
+</div>
+```
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =================================
+     SUPABASE
+================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
+
+<script>
+
+
+/* =================================
+   KONFIGURACJA
+================================= */
+
+const SUPABASE_URL =
+    "https://hktkcaskbjaungabrilw.supabase.co";
+
+
+const SUPABASE_KEY =
+    "sb_publishable_KLUzRcddw5TfzHtodWpxTQ_NCPjqU0F";
+
+
+const db =
+    supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+
+/* =================================
+   ELEMENTY
+================================= */
+
+const loginPanel =
+    document.getElementById(
+        "loginPanel"
+    );
+
+
+const adminPanel =
+    document.getElementById(
+        "adminPanel"
+    );
+
+
+const loginResult =
+    document.getElementById(
+        "loginResult"
+    );
+
+
+const result =
+    document.getElementById(
+        "result"
+    );
+
+
+const currentStatus =
+    document.getElementById(
+        "currentStatus"
+    );
+
+
+
+/* =================================
+   LOGOWANIE
+================================= */
+
+async function zaloguj() {
+
+    const email =
+        document
+        .getElementById("email")
+        .value
+        .trim();
+
+
+    const password =
+        document
+        .getElementById("password")
+        .value;
+
+
+    if (!email || !password) {
+
+        loginResult.textContent =
+            "Wpisz e-mail i hasło.";
+
+        return;
+
+    }
+
+
+    loginResult.textContent =
+        "Logowanie...";
+
+
+    const {
+        data,
+        error
+    } =
+        await db.auth.signInWithPassword({
+
+            email: email,
+
+            password: password
+
+        });
+
+
+    if (error) {
+
+        console.error(error);
+
+        loginResult.textContent =
+            "❌ " +
+            error.message;
+
+        return;
+
+    }
+
+
+    loginResult.textContent = "";
+
+    pokazAdmin();
+
+}
+
+
+
+/* =================================
+   POKAŻ ADMINA
+================================= */
+
+function pokazAdmin() {
+
+    loginPanel
+        .classList
+        .add("hidden");
+
+
+    adminPanel
+        .classList
+        .remove("hidden");
+
+
+    pobierzStatus();
+
+}
+
+
+
+/* =================================
+   POBIERZ STATUS
+================================= */
+
+async function pobierzStatus() {
+
+    const {
+        data,
+        error
+    } =
+        await db
+        .from("door_status")
+        .select(
+            "is_open,mode,message,system_mode,emergency_card_enabled,updated_at"
+        )
+        .eq("id", 1)
+        .single();
+
+
+    if (error) {
+
+        console.error(error);
+
+        currentStatus.textContent =
+            "BŁĄD";
+
+
+        result.textContent =
+            "❌ " +
+            error.message;
+
+        return;
+
+    }
+
+
+    currentStatus.textContent =
+        data.is_open
+            ? "🟢 OTWARTE"
+            : "🔴 ZAMKNIĘTE";
+
+
+    currentStatus.className =
+        data.is_open
+            ? "status open"
+            : "status closed";
+
+
+    document.getElementById(
+        "mode"
+    ).value =
+        data.mode || "";
+
+
+    document.getElementById(
+        "message"
+    ).value =
+        data.message || "";
+
+
+    document.getElementById(
+        "emergencyCard"
+    ).checked =
+        data.emergency_card_enabled === true;
+
+}
+
+
+
+/* =================================
+   OTWARTE / ZAMKNIĘTE
+================================= */
+
+async function zmienStatus(
+    isOpen
+) {
+
+    result.textContent =
+        "Zapisywanie...";
+
+
+    const {
+        error
+    } =
+        await db
+        .from("door_status")
+        .update({
+
+            is_open: isOpen,
+
+            updated_at:
+                new Date().toISOString()
+
+        })
+        .eq("id", 1);
+
+
+    if (error) {
+
+        console.error(error);
+
+        result.textContent =
+            "❌ " +
+            error.message;
+
+        return;
+
+    }
+
+
+    result.textContent =
+        isOpen
+            ? "🟢 Ustawiono OTWARTE"
+            : "🔴 Ustawiono ZAMKNIĘTE";
+
+
+    await pobierzStatus();
+
+}
+
+
+
+/* =================================
+   ZMIANA TRYBU
+================================= */
+
+async function ustawTryb(
+    tryb
+) {
+
+    result.textContent =
+        "Zmienianie trybu...";
+
+
+    const karta =
+        document.getElementById(
+            "emergencyCard"
+        ).checked;
+
+
+    const {
+        error
+    } =
+        await db
+        .from("door_status")
+        .update({
+
+            system_mode: tryb,
+
+            emergency_card_enabled:
+                tryb === "emergency"
+                    ? karta
+                    : false,
+
+            updated_at:
+                new Date().toISOString()
+
+        })
+        .eq("id", 1);
+
+
+    if (error) {
+
+        console.error(error);
+
+        result.textContent =
+            "❌ " +
+            error.message;
+
+        return;
+
+    }
+
+
+    result.textContent =
+        "✅ Tryb zmieniony";
+
+
+    await pobierzStatus();
+
+}
+
+
+
+/* =================================
+   ZAPIS INFORMACJI
+================================= */
+
+async function zapiszInformacje() {
+
+    const mode =
+        document
+        .getElementById("mode")
+        .value
+        .trim();
+
+
+    const message =
+        document
+        .getElementById("message")
+        .value
+        .trim();
+
+
+    const karta =
+        document.getElementById(
+            "emergencyCard"
+        ).checked;
+
+
+    result.textContent =
+        "Zapisywanie...";
+
+
+    const {
+        error
+    } =
+        await db
+        .from("door_status")
+        .update({
+
+            mode: mode,
+
+            message: message,
+
+            emergency_card_enabled:
+                karta,
+
+            updated_at:
+                new Date().toISOString()
+
+        })
+        .eq("id", 1);
+
+
+    if (error) {
+
+        console.error(error);
+
+        result.textContent =
+            "❌ " +
+            error.message;
+
+        return;
+
+    }
+
+
+    result.textContent =
+        "✅ Zapisano";
+
+
+    await pobierzStatus();
+
+}
+
+
+
+/* =================================
+   WYLOGOWANIE
+================================= */
+
+async function wyloguj() {
+
+    await db.auth.signOut();
+
+
+    adminPanel
+        .classList
+        .add("hidden");
+
+
+    loginPanel
+        .classList
+        .remove("hidden");
+
+
+    document.getElementById(
+        "password"
+    ).value = "";
+
+
+}
+
+
+
+/* =================================
+   SPRAWDZENIE SESJI
+================================= */
+
+async function sprawdzSesje() {
+
+    const {
+        data
+    } =
+        await db.auth.getSession();
+
+
+    if (data.session) {
+
+        pokazAdmin();
+
+    }
+
+}
+
+
+sprawdzSesje();
+
+
+
+/* =================================
+   AUTOMATYCZNE ODŚWIEŻANIE
+================================= */
+
+setInterval(
+
+    async function() {
+
+        const {
+            data
+        } =
+            await db.auth.getSession();
+
+
+        if (data.session) {
+
+            pobierzStatus();
+
+        }
+
+    },
+
+    2000
+
+);
+
+
+</script>
+
+</body>
+
+</html>
