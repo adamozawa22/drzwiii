@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Status drzwi</title>
 
 <style>
@@ -11,351 +10,530 @@
     box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
     margin: 0;
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
-    font-family: Arial, sans-serif;
+    background: #151515;
     color: white;
-    overflow: hidden;
-    transition: background 0.7s ease;
+    transition:
+        background 0.8s cubic-bezier(.22,1,.36,1),
+        color 0.5s ease;
 }
 
-/* NORMALNY - ZAMKNIĘTE */
+/* =========================
+   GŁÓWNY EKRAN
+========================= */
+
+.screen {
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+
+    transition:
+        opacity 0.35s ease,
+        transform 0.8s cubic-bezier(.22,1,.36,1),
+        filter 0.5s ease;
+}
+
+/* =========================
+   NORMALNY
+========================= */
 
 body.closed {
     background:
-        radial-gradient(
-            circle at 15% 10%,
-            rgba(255, 100, 100, .8),
-            transparent 40%
-        ),
-        radial-gradient(
-            circle at 85% 90%,
-            rgba(100, 0, 0, .9),
-            transparent 50%
-        ),
-        linear-gradient(
-            135deg,
-            #ff1a1a,
-            #790000
-        );
+        radial-gradient(circle at center, #ff4545 0%, #d40000 55%, #850000 100%);
 }
-
-/* NORMALNY - OTWARTE */
 
 body.open {
     background:
-        radial-gradient(
-            circle at 15% 10%,
-            rgba(120, 255, 150, .8),
-            transparent 40%
-        ),
-        radial-gradient(
-            circle at 85% 90%,
-            rgba(0, 100, 40, .9),
-            transparent 50%
-        ),
-        linear-gradient(
-            135deg,
-            #00e65c,
-            #007a32
-        );
+        radial-gradient(circle at center, #35e879 0%, #08a947 55%, #006d2c 100%);
 }
 
-/* AWARYJNY */
+body.closed .main-icon {
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,.25));
+}
+
+body.open .main-icon {
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,.2));
+}
+
+.main-icon {
+    font-size: clamp(90px, 15vw, 190px);
+    line-height: 1;
+    margin-bottom: 25px;
+
+    animation: iconAppear .7s cubic-bezier(.22,1,.36,1);
+}
+
+.status {
+    font-size: clamp(50px, 9vw, 125px);
+    font-weight: 900;
+    letter-spacing: -4px;
+    text-align: center;
+    text-shadow: 0 8px 30px rgba(0,0,0,.2);
+
+    animation: statusAppear .65s cubic-bezier(.22,1,.36,1);
+}
+
+.message {
+    margin-top: 18px;
+    font-size: clamp(18px, 3vw, 34px);
+    font-weight: 600;
+    opacity: .9;
+    text-align: center;
+
+    animation: messageAppear .7s ease;
+}
+
+/* =========================
+   NAZWA TRYBU
+========================= */
+
+.mode-name {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    font-size: clamp(15px, 2vw, 23px);
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+
+    opacity: .75;
+
+    transition:
+        opacity .4s ease,
+        transform .5s ease;
+}
+
+.mode-name.animate {
+    animation: modeChange .7s cubic-bezier(.22,1,.36,1);
+}
+
+/* =========================
+   AWARIA
+========================= */
+
+body.malfunction {
+    background:
+        repeating-linear-gradient(
+            0deg,
+            #090909 0px,
+            #090909 3px,
+            #151515 4px,
+            #151515 7px
+        );
+
+    animation: malfunctionBg 0.15s infinite;
+}
+
+body.malfunction .screen {
+    filter: contrast(1.3);
+}
+
+body.malfunction .main-icon {
+    animation:
+        glitchIcon .2s infinite,
+        iconAppear .7s cubic-bezier(.22,1,.36,1);
+}
+
+body.malfunction .status {
+    text-shadow:
+        4px 0 #ff0000,
+        -4px 0 #00ffff,
+        0 0 25px rgba(255,255,255,.3);
+
+    animation:
+        glitchText .18s infinite,
+        statusAppear .65s cubic-bezier(.22,1,.36,1);
+}
+
+/* =========================
+   AWARYJNY
+========================= */
 
 body.emergency {
     background:
         radial-gradient(
-            circle at 20% 20%,
-            #7cff9b,
-            transparent 40%
-        ),
-        linear-gradient(
-            135deg,
-            #00c853,
-            #006b2c
+            circle at center,
+            #ffe600 0%,
+            #ff9d00 40%,
+            #d90000 100%
         );
 }
 
-/* EWAKUACJA */
+body.emergency .screen {
+    animation: emergencyPulse 1.5s infinite;
+}
+
+body.emergency .status {
+    text-shadow:
+        0 0 20px rgba(255,255,255,.7),
+        0 8px 30px rgba(0,0,0,.25);
+}
+
+body.emergency .mode-name {
+    opacity: 1;
+}
+
+/* =========================
+   EWAKUACJA
+========================= */
 
 body.evacuation {
     background:
-        repeating-linear-gradient(
-            45deg,
-            #00a83b,
-            #00a83b 40px,
-            #00852f 40px,
-            #00852f 80px
+        linear-gradient(
+            135deg,
+            #00a844,
+            #00d96b,
+            #007a34
         );
+
+    background-size: 200% 200%;
+
+    animation: evacuationBg 5s ease infinite;
 }
 
-/* LOCKDOWN */
+body.evacuation .status {
+    font-size: clamp(45px, 8vw, 110px);
+    text-shadow: 0 8px 30px rgba(0,0,0,.25);
+}
+
+body.evacuation .main-icon {
+    animation:
+        evacuationIcon 1s infinite alternate,
+        iconAppear .7s cubic-bezier(.22,1,.36,1);
+}
+
+/* =========================
+   LOCKDOWN
+========================= */
 
 body.lockdown {
     background:
         radial-gradient(
             circle at center,
-            #a00000,
-            transparent 55%
-        ),
-        #3b0000;
-}
-
-/* AWARIA SYSTEMU */
-
-body.malfunction {
-    background: #050505;
-}
-
-/* GŁÓWNY EKRAN */
-
-#status {
-    width: 100vw;
-    height: 100vh;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    text-align: center;
-}
-
-.content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-
-    padding: 30px;
-}
-
-.icon {
-    font-size: clamp(90px, 18vw, 220px);
-    line-height: 1;
-}
-
-.title {
-    font-size: clamp(45px, 10vw, 140px);
-    font-weight: 900;
-    letter-spacing: 5px;
-
-    text-shadow:
-        0 10px 30px rgba(0,0,0,.3);
-}
-
-.message {
-    font-size: clamp(18px, 3vw, 32px);
-    font-weight: bold;
-    max-width: 900px;
-}
-
-/* KARTA */
-
-.card-area {
-    position: fixed;
-
-    bottom: 30px;
-    left: 50%;
-
-    transform: translateX(-50%);
-
-    width: min(90%, 500px);
-
-    padding: 20px;
-
-    border-radius: 20px;
-
-    background:
-        rgba(0,0,0,.3);
-
-    backdrop-filter: blur(10px);
-}
-
-.card-button {
-    width: 100%;
-
-    padding: 20px;
-
-    border: 2px solid rgba(255,255,255,.6);
-
-    border-radius: 15px;
-
-    background: rgba(255,255,255,.12);
-
-    color: white;
-
-    font-size: 22px;
-    font-weight: bold;
-
-    cursor: pointer;
-
-    transition: .2s;
-}
-
-.card-button:hover {
-    background: rgba(255,255,255,.25);
-}
-
-.card-button:active {
-    transform: scale(.97);
-}
-
-/* LOCKDOWN */
-
-.lock-icon {
-    font-size: clamp(80px, 16vw, 180px);
-}
-
-/* AWARIA */
-
-body.malfunction .content {
-    animation: shake .08s infinite;
-}
-
-body.malfunction .title {
-    text-shadow:
-        5px 0 red,
-        -5px 0 cyan;
-}
-
-body.malfunction::before {
-    content: "";
-
-    position: fixed;
-
-    inset: 0;
-
-    pointer-events: none;
-
-    background:
-        repeating-linear-gradient(
-            0deg,
-            rgba(255,255,255,.04),
-            rgba(255,255,255,.04) 2px,
-            transparent 2px,
-            transparent 5px
+            #5d0000 0%,
+            #240000 55%,
+            #080000 100%
         );
-
-    animation: scan .15s linear infinite;
 }
 
-body.malfunction::after {
-    content: "SYSTEM ERROR";
+body.lockdown .status {
+    letter-spacing: 1px;
+    text-transform: uppercase;
 
-    position: fixed;
-
-    top: 15px;
-    left: 15px;
-
-    font-family: monospace;
-
-    color: #ff3333;
-
-    font-size: 14px;
-
-    animation: blink .3s infinite;
+    text-shadow:
+        0 0 15px rgba(255,0,0,.8),
+        0 8px 35px rgba(0,0,0,.5);
 }
 
-@keyframes shake {
+body.lockdown .mode-name {
+    opacity: 1;
+    color: #ff5c5c;
+}
 
+/* =========================
+   ANIMACJE ZMIANY
+========================= */
+
+.screen.transitioning {
+    animation: screenTransition .75s cubic-bezier(.22,1,.36,1);
+}
+
+@keyframes screenTransition {
     0% {
-        transform: translate(0,0);
+        opacity: .25;
+        transform: scale(.94);
+        filter: blur(12px);
     }
 
-    25% {
-        transform: translate(3px,-2px);
-    }
-
-    50% {
-        transform: translate(-3px,2px);
-    }
-
-    75% {
-        transform: translate(2px,3px);
+    55% {
+        opacity: 1;
+        transform: scale(1.025);
+        filter: blur(0);
     }
 
     100% {
-        transform: translate(0,0);
+        opacity: 1;
+        transform: scale(1);
     }
 }
 
-@keyframes scan {
+@keyframes iconAppear {
+    0% {
+        opacity: 0;
+        transform: scale(.55) translateY(25px);
+    }
 
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes statusAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes messageAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    100% {
+        opacity: .9;
+        transform: translateY(0);
+    }
+}
+
+@keyframes modeChange {
+    0% {
+        opacity: 0;
+        transform:
+            translateX(-50%)
+            translateY(12px);
+    }
+
+    100% {
+        opacity: .75;
+        transform:
+            translateX(-50%)
+            translateY(0);
+    }
+}
+
+/* =========================
+   SPECJALNE
+========================= */
+
+@keyframes emergencyPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.01);
+    }
+}
+
+@keyframes evacuationBg {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes evacuationIcon {
     from {
         transform: translateY(0);
     }
 
     to {
-        transform: translateY(5px);
+        transform: translateY(-8px);
     }
 }
 
-@keyframes blink {
+@keyframes malfunctionBg {
+    0% {
+        transform: translate(0);
+    }
+
+    25% {
+        transform: translate(1px, -1px);
+    }
 
     50% {
-        opacity: 0;
+        transform: translate(-1px, 1px);
     }
+
+    75% {
+        transform: translate(1px, 1px);
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+@keyframes glitchIcon {
+    0% {
+        transform: translate(0);
+    }
+
+    25% {
+        transform: translate(4px, -2px);
+    }
+
+    50% {
+        transform: translate(-4px, 2px);
+    }
+
+    75% {
+        transform: translate(2px, 3px);
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+@keyframes glitchText {
+    0% {
+        transform: translate(0);
+    }
+
+    30% {
+        transform: translate(-3px, 1px);
+    }
+
+    60% {
+        transform: translate(3px, -1px);
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+/* =========================
+   KARTA
+========================= */
+
+.card-area {
+    position: absolute;
+    bottom: 90px;
+}
+
+.card-button {
+    border: none;
+    border-radius: 18px;
+
+    padding: 18px 30px;
+
+    background: rgba(255,255,255,.95);
+    color: #111;
+
+    font-size: 20px;
+    font-weight: 800;
+
+    box-shadow:
+        0 12px 35px rgba(0,0,0,.25);
+
+    cursor: pointer;
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+.card-button:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 16px 40px rgba(0,0,0,.3);
+}
+
+.card-button:active {
+    transform: scale(.96);
 }
 
 .hidden {
-    display: none !important;
+    display: none;
 }
 
+/* =========================
+   ODŚWIEŻANIE
+========================= */
+
+.refreshing::after {
+    content: "";
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 4px;
+
+    background: rgba(255,255,255,.8);
+
+    transform: translateX(-100%);
+
+    animation: refreshLine .65s ease;
+}
+
+@keyframes refreshLine {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
 </style>
 </head>
 
 <body class="closed">
 
-<div id="status">
+<div class="screen" id="screen">
 
-    <div class="content">
+    <div class="main-icon" id="icon">
+        🔒
+    </div>
 
-        <div
-            id="icon"
-            class="icon">
-            🔴
-        </div>
+    <div class="status" id="status">
+        ZAMKNIĘTE
+    </div>
 
-        <div
-            id="title"
-            class="title">
-            ZAMKNIĘTE
-        </div>
+    <div class="message" id="message"></div>
 
-        <div
-            id="message"
-            class="message">
-        </div>
+    <div class="card-area hidden" id="cardArea">
+        <button
+            class="card-button"
+            id="cardButton"
+            onclick="przylozKarte()"
+        >
+            💳 PRZYŁÓŻ KARTĘ
+        </button>
+    </div>
 
+    <div class="mode-name" id="modeName">
+        NORMALNY
     </div>
 
 </div>
 
-
-<!-- KARTA AWARYJNA -->
-
-<div
-    id="cardArea"
-    class="card-area hidden">
-
-    <button
-        id="cardButton"
-        class="card-button"
-        onclick="przylozKarte()">
-
-        💳 PRZYŁÓŻ KARTĘ
-
-    </button>
-
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
@@ -365,72 +543,104 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
     "sb_publishable_KLUzRcddw5TfzHtodWpxTQ_NCPjqU0F";
 
+const db =
+    supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
-let ostatniStatus = null;
 
-let kartaOdblokowana = false;
+const screen =
+    document.getElementById("screen");
+
+const status =
+    document.getElementById("status");
+
+const icon =
+    document.getElementById("icon");
+
+const message =
+    document.getElementById("message");
+
+const modeName =
+    document.getElementById("modeName");
+
+const cardArea =
+    document.getElementById("cardArea");
+
+
+let previousState = null;
 
 
 /* =========================
-   POBIERANIE
+   ODCZYT
 ========================= */
 
-async function pobierzStatus() {
+async function loadStatus() {
 
-    try {
+    /*
+      Pasek animacji odświeżania.
+      Nie zmieniamy całego ekranu przy
+      każdym pollingu, bo wyglądałoby to
+      jak migająca katastrofa.
+    */
 
-        const response = await fetch(
+    document.body.classList.remove("refreshing");
 
-            SUPABASE_URL +
-            "/rest/v1/door_status" +
-            "?id=eq.1" +
-            "&select=*",
+    void document.body.offsetWidth;
 
-            {
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization":
-                        "Bearer " + SUPABASE_KEY
-                },
+    document.body.classList.add("refreshing");
 
-                cache: "no-store"
-            }
+
+    const { data, error } =
+        await db
+            .from("door_status")
+            .select("*")
+            .eq("id", 1)
+            .single();
+
+
+    if (error) {
+
+        console.error(
+            "Błąd Supabase:",
+            error
         );
 
-
-        if (!response.ok) {
-            throw new Error(
-                "HTTP " + response.status
-            );
-        }
-
-
-        const data =
-            await response.json();
-
-
-        if (!data.length) {
-            throw new Error(
-                "Brak rekordu"
-            );
-        }
-
-
-        const status = data[0];
-
-
-        ostatniStatus = status;
-
-
-        aktualizujEkran(status);
-
-
-    } catch (error) {
-
-        console.error(error);
-
+        return;
     }
 
+
+    const newState = JSON.stringify(data);
+
+
+    /*
+      Animacja główna tylko wtedy,
+      kiedy faktycznie coś się zmieniło.
+    */
+
+    if (previousState !== null &&
+        previousState !== newState) {
+
+        screen.classList.remove("transitioning");
+
+        void screen.offsetWidth;
+
+        screen.classList.add("transitioning");
+
+
+        modeName.classList.remove("animate");
+
+        void modeName.offsetWidth;
+
+        modeName.classList.add("animate");
+    }
+
+
+    previousState = newState;
+
+
+    updateScreen(data);
 }
 
 
@@ -438,248 +648,186 @@ async function pobierzStatus() {
    AKTUALIZACJA EKRANU
 ========================= */
 
-function aktualizujEkran(status) {
+function updateScreen(data) {
 
     const mode =
-        status.system_mode || "normal";
+        data.system_mode || "normal";
 
 
-    document.body.className = "";
-
-
-    const cardArea =
-        document.getElementById(
-            "cardArea"
-        );
-
-
-    cardArea.classList.add(
-        "hidden"
+    document.body.classList.remove(
+        "open",
+        "closed",
+        "emergency",
+        "evacuation",
+        "lockdown",
+        "malfunction"
     );
+
+
+    cardArea.classList.add("hidden");
 
 
     /* NORMALNY */
 
     if (mode === "normal") {
 
-        document.body.classList.add(
-            status.is_open
-                ? "open"
-                : "closed"
-        );
+        if (data.is_open) {
 
+            document.body.classList.add("open");
 
-        document.getElementById(
-            "icon"
-        ).textContent =
-            status.is_open
-                ? "🟢"
-                : "🔴";
+            icon.textContent = "🔓";
 
+            status.textContent =
+                "OTWARTE";
 
-        document.getElementById(
-            "title"
-        ).textContent =
-            status.is_open
-                ? "OTWARTE"
-                : "ZAMKNIĘTE";
+        } else {
 
+            document.body.classList.add("closed");
 
-        document.getElementById(
-            "message"
-        ).textContent =
-            status.message || "";
+            icon.textContent = "🔒";
 
+            status.textContent =
+                "ZAMKNIĘTE";
+        }
 
-        return;
+        message.textContent =
+            data.message || "";
+
+        modeName.textContent =
+            "NORMALNY";
     }
 
 
     /* AWARYJNY */
 
-    if (mode === "emergency") {
+    else if (mode === "emergency") {
 
         document.body.classList.add(
             "emergency"
         );
 
+        icon.textContent = "⚠️";
 
-        document.getElementById(
-            "icon"
-        ).textContent =
-            "⚠️";
+        status.textContent =
+            data.is_open
+                ? "OTWARTE"
+                : "TRYB AWARYJNY";
 
+        message.textContent =
+            data.message ||
+            "Postępuj zgodnie z komunikatami";
 
-        document.getElementById(
-            "title"
-        ).textContent =
-            "TRYB AWARYJNY";
-
-
-        document.getElementById(
-            "message"
-        ).textContent =
-            status.message ||
-            "Przygotuj kartę dostępu";
+        modeName.textContent =
+            "AWARYJNY";
 
 
-        if (
-            status.emergency_card_enabled
-        ) {
+        if (data.emergency_card_enabled) {
 
             cardArea.classList.remove(
                 "hidden"
             );
-
         }
-
-
-        return;
     }
 
 
     /* EWAKUACJA */
 
-    if (mode === "evacuation") {
+    else if (mode === "evacuation") {
 
         document.body.classList.add(
             "evacuation"
         );
 
+        icon.textContent = "🚪";
 
-        document.getElementById(
-            "icon"
-        ).textContent =
-            "🚪";
-
-
-        document.getElementById(
-            "title"
-        ).textContent =
+        status.textContent =
             "EWAKUACJA";
 
+        message.textContent =
+            data.message ||
+            "Opuść obiekt";
 
-        document.getElementById(
-            "message"
-        ).textContent =
-            status.message ||
-            "DRZWI ODBLOKOWANE";
-
-
-        return;
+        modeName.textContent =
+            "EWAKUACJA";
     }
 
 
     /* LOCKDOWN */
 
-    if (mode === "lockdown") {
+    else if (mode === "lockdown") {
 
         document.body.classList.add(
             "lockdown"
         );
 
+        icon.textContent = "⛔";
 
-        document.getElementById(
-            "icon"
-        ).textContent =
-            "🔒";
-
-
-        document.getElementById(
-            "title"
-        ).textContent =
+        status.textContent =
             "LOCKDOWN";
 
+        message.textContent =
+            data.message ||
+            "Dostęp zablokowany";
 
-        document.getElementById(
-            "message"
-        ).textContent =
-            status.message ||
-            "DOSTĘP ZABLOKOWANY";
-
-
-        return;
+        modeName.textContent =
+            "LOCKDOWN";
     }
 
 
     /* AWARIA */
 
-    if (mode === "malfunction") {
+    else if (mode === "malfunction") {
 
         document.body.classList.add(
             "malfunction"
         );
 
+        icon.textContent = "⚠️";
 
-        document.getElementById(
-            "icon"
-        ).textContent =
-            "⚠️";
+        status.textContent =
+            "AWARIA";
 
+        message.textContent =
+            data.message ||
+            "System niedostępny";
 
-        document.getElementById(
-            "title"
-        ).textContent =
-            "SYSTEM ERROR";
-
-
-        document.getElementById(
-            "message"
-        ).textContent =
-            "SYSTEM UNAVAILABLE";
-
-
-        return;
+        modeName.textContent =
+            "AWARIA";
     }
-
 }
 
 
 /* =========================
-   KARTA
+   SYMULACJA KARTY
 ========================= */
 
 function przylozKarte() {
 
-    if (
-        !ostatniStatus ||
-        !ostatniStatus.emergency_card_enabled
-    ) {
-        return;
-    }
+    /*
+      To jest wyłącznie animacja/UI.
+      Nie steruje żadnym fizycznym zamkiem.
+    */
 
-
-    kartaOdblokowana = true;
-
-
-    document.getElementById(
-        "icon"
-    ).textContent =
-        "🟢";
-
-
-    document.getElementById(
-        "title"
-    ).textContent =
-        "OTWARTE";
-
-
-    document.getElementById(
-        "message"
-    ).textContent =
-        "KARTA ZAAKCEPTOWANA";
-
-
-    document.body.className =
-        "open";
-
-
-    document.getElementById(
-        "cardArea"
-    ).classList.add(
+    cardArea.classList.add(
         "hidden"
     );
 
+    document.body.classList.remove(
+        "emergency"
+    );
+
+    document.body.classList.add(
+        "open"
+    );
+
+    icon.textContent =
+        "🔓";
+
+    status.textContent =
+        "OTWARTE";
+
+    message.textContent =
+        "KARTA ZAAKCEPTOWANA";
 }
 
 
@@ -687,11 +835,15 @@ function przylozKarte() {
    START
 ========================= */
 
-pobierzStatus();
+loadStatus();
 
+
+/*
+  Odświeżanie danych co 2 sekundy.
+*/
 
 setInterval(
-    pobierzStatus,
+    loadStatus,
     2000
 );
 
