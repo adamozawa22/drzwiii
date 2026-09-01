@@ -4,122 +4,96 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Status drzwi</title>
+<title>Status</title>
 
 <style>
 * {
     box-sizing: border-box;
 }
 
+html,
 body {
     margin: 0;
-    min-height: 100vh;
+    width: 100%;
+    height: 100%;
+}
+
+body {
     font-family: Arial, sans-serif;
-    background: #111827;
     color: white;
+    overflow: hidden;
+    transition: background 0.8s ease;
+}
+
+body.closed {
+    background:
+        radial-gradient(circle at top left, #ff4b4b 0%, transparent 45%),
+        radial-gradient(circle at bottom right, #650000 0%, transparent 55%),
+        linear-gradient(135deg, #ff0000, #7a0000);
+}
+
+body.open {
+    background:
+        radial-gradient(circle at top left, #6cff8a 0%, transparent 45%),
+        radial-gradient(circle at bottom right, #006b2c 0%, transparent 55%),
+        linear-gradient(135deg, #00c853, #006b27);
+}
+
+#status {
+    width: 100vw;
+    height: 100vh;
+
     display: flex;
     justify-content: center;
     align-items: center;
-}
 
-.container {
-    width: 90%;
-    max-width: 1000px;
     text-align: center;
 }
 
-h1 {
-    font-size: 40px;
-    margin-bottom: 40px;
-}
-
-.status {
-    border-radius: 30px;
-    padding: 60px 20px;
-    transition: 0.3s;
-}
-
-.open {
-    background: #166534;
-}
-
-.closed {
-    background: #991b1b;
+.status-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
 }
 
 .icon {
-    font-size: 120px;
-    margin-bottom: 20px;
+    font-size: clamp(100px, 20vw, 220px);
+    line-height: 1;
+    filter: drop-shadow(0 10px 25px rgba(0,0,0,0.25));
 }
 
 .status-text {
-    font-size: 80px;
-    font-weight: bold;
-}
-
-.info {
-    margin-top: 30px;
-    background: #1f2937;
-    border-radius: 20px;
-    padding: 25px;
+    font-size: clamp(55px, 11vw, 150px);
+    font-weight: 900;
+    letter-spacing: 5px;
+    text-shadow: 0 8px 25px rgba(0,0,0,0.25);
 }
 
 .mode {
-    font-size: 30px;
+    font-size: 20px;
+    opacity: 0.8;
 }
 
-.message {
-    font-size: 25px;
-    margin-top: 15px;
+.hidden {
+    display: none;
 }
 
-.loading {
-    margin-top: 20px;
-    color: #9ca3af;
-}
-
-.spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid #777;
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    vertical-align: middle;
-    margin-right: 8px;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@media (max-width: 600px) {
-
-    h1 {
-        font-size: 28px;
-    }
-
-    .status-text {
-        font-size: 50px;
-    }
-
-    .icon {
-        font-size: 80px;
-    }
+#error {
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    font-size: 12px;
+    opacity: 0.5;
 }
 </style>
 </head>
 
-<body>
+<body class="closed">
 
-<div class="container">
+<div id="status">
 
-    <h1>STATUS DRZWI</h1>
-
-    <div id="statusBox" class="status closed">
+    <div class="status-content">
 
         <div id="icon" class="icon">
             🔴
@@ -129,122 +103,115 @@ h1 {
             ZAMKNIĘTE
         </div>
 
-    </div>
-
-    <div class="info">
-
-        <div class="mode">
-            TRYB:
-            <strong id="mode">
-                Normalny
-            </strong>
+        <div id="mode" class="mode">
+            Normalny
         </div>
-
-        <div id="message" class="message">
-            Wkrótce zapraszamy
-        </div>
-
-    </div>
-
-    <div class="loading">
-
-        <span id="spinner" class="spinner"></span>
-
-        <span id="connection">
-            Sprawdzanie...
-        </span>
 
     </div>
 
 </div>
 
+<div id="error"></div>
+
 <script>
+
+const SUPABASE_URL =
+    "https://hktkcaskbjaungabrilw.supabase.co";
+
+const SUPABASE_KEY =
+    "TWOJ_ANON_KEY";
+
 
 let poprzedniStan = null;
 
+
 async function pobierzStatus() {
-
-    const spinner = document.getElementById("spinner");
-    const connection = document.getElementById("connection");
-
-    spinner.style.display = "inline-block";
 
     try {
 
-        /*
-        TU BĘDZIE ADRES NASZEGO BACKENDU
+        const response = await fetch(
+            SUPABASE_URL +
+            "/rest/v1/door_status?id=eq.1&select=is_open,mode,message,updated_at",
+            {
+                method: "GET",
 
-        Na przykład:
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": "Bearer " + SUPABASE_KEY
+                },
 
-        https://twoja-strona.pl/api/status
-        */
+                cache: "no-store"
+            }
+        );
 
-        const response = await fetch("/api/status", {
-            cache: "no-store"
-        });
 
         if (!response.ok) {
-            throw new Error("Błąd serwera");
+            throw new Error("Błąd Supabase");
         }
+
 
         const data = await response.json();
 
-        /*
-        Sprawdzamy, czy stan rzeczywiście się zmienił.
-        */
 
-        const nowyStan = JSON.stringify(data);
-
-        if (nowyStan !== poprzedniStan) {
-
-            document.getElementById("statusText").textContent =
-                data.isOpen ? "OTWARTE" : "ZAMKNIĘTE";
-
-            document.getElementById("icon").textContent =
-                data.isOpen ? "🟢" : "🔴";
-
-            const box = document.getElementById("statusBox");
-
-            box.classList.remove("open");
-            box.classList.remove("closed");
-
-            box.classList.add(
-                data.isOpen ? "open" : "closed"
-            );
-
-            document.getElementById("mode").textContent =
-                data.mode || "Normalny";
-
-            document.getElementById("message").textContent =
-                data.message || "";
-
-            poprzedniStan = nowyStan;
+        if (!data.length) {
+            throw new Error("Brak statusu");
         }
 
-        connection.textContent =
-            "Połączono • sprawdzono: " +
-            new Date().toLocaleTimeString("pl-PL");
 
-    } catch (error) {
+        const status = data[0];
 
-        connection.textContent =
-            "Brak połączenia • pokazuję ostatni stan";
+
+        const stan =
+            JSON.stringify(status);
+
+
+        if (stan === poprzedniStan) {
+            return;
+        }
+
+
+        poprzedniStan = stan;
+
+
+        const otwarte =
+            status.is_open === true;
+
+
+        document.body.className =
+            otwarte ? "open" : "closed";
+
+
+        document.getElementById("icon").textContent =
+            otwarte ? "🟢" : "🔴";
+
+
+        document.getElementById("statusText").textContent =
+            otwarte ? "OTWARTE" : "ZAMKNIĘTE";
+
+
+        document.getElementById("mode").textContent =
+            status.mode || "Normalny";
+
+
+        document.getElementById("error").textContent = "";
 
     }
 
-    spinner.style.display = "none";
+    catch (error) {
+
+        document.getElementById("error").textContent =
+            "Brak połączenia z serwerem";
+
+    }
+
 }
 
-
-/*
-SPRAWDZAMY SERWER CO 5 SEKUND
-*/
 
 pobierzStatus();
 
 setInterval(
     pobierzStatus,
-    5000
+    2000
 );
 
 </script>
