@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Panel</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    font-family: Arial, sans-serif;
+
+    background: #111827;
+    color: white;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.panel {
+    width: 90%;
+    max-width: 500px;
+
+    background: #1f2937;
+
+    border-radius: 25px;
+
+    padding: 30px;
+
+    text-align: center;
+}
+
+h1 {
+    margin-top: 0;
+}
+
+button {
+    width: 100%;
+
+    border: 0;
+    border-radius: 15px;
+
+    padding: 25px;
+
+    margin-top: 15px;
+
+    font-size: 25px;
+    font-weight: bold;
+
+    color: white;
+
+    cursor: pointer;
+}
+
+.open {
+    background: #16a34a;
+}
+
+.closed {
+    background: #dc2626;
+}
+
+input {
+    width: 100%;
+
+    margin-top: 15px;
+
+    padding: 15px;
+
+    border-radius: 12px;
+
+    border: none;
+
+    font-size: 18px;
+}
+
+#result {
+    margin-top: 20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+
+    <h1>STATUS DRZWI</h1>
+
+    <button
+        class="open"
+        onclick="zmienStatus(true)">
+        🟢 OTWÓRZ
+    </button>
+
+    <button
+        class="closed"
+        onclick="zmienStatus(false)">
+        🔴 ZAMKNIJ
+    </button>
+
+    <input
+        id="mode"
+        placeholder="Tryb"
+        value="Normalny">
+
+    <input
+        id="message"
+        placeholder="Komunikat">
+
+    <div id="result"></div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+    "https://hktkcaskbjaungabrilw.supabase.co";
+
+const SUPABASE_KEY =
+    "TWOJ_ANON_KEY";
+
+
+async function zmienStatus(isOpen) {
+
+    const mode =
+        document.getElementById("mode").value;
+
+    const message =
+        document.getElementById("message").value;
+
+
+    try {
+
+        const response = await fetch(
+            SUPABASE_URL +
+            "/rest/v1/door_status?id=eq.1",
+            {
+
+                method: "PATCH",
+
+                headers: {
+
+                    "apikey": SUPABASE_KEY,
+
+                    "Authorization":
+                        "Bearer " + SUPABASE_KEY,
+
+                    "Content-Type":
+                        "application/json",
+
+                    "Prefer":
+                        "return=minimal"
+                },
+
+                body: JSON.stringify({
+
+                    is_open: isOpen,
+
+                    mode: mode,
+
+                    message: message,
+
+                    updated_at:
+                        new Date().toISOString()
+
+                })
+            }
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Nie udało się zmienić statusu"
+            );
+
+        }
+
+
+        document.getElementById("result").textContent =
+            isOpen
+                ? "🟢 Ustawiono OTWARTE"
+                : "🔴 Ustawiono ZAMKNIĘTE";
+
+
+    } catch (error) {
+
+        document.getElementById("result").textContent =
+            "❌ " + error.message;
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
