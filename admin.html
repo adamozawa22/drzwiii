@@ -2,9 +2,13 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Panel</title>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>Panel statusu</title>
+
 
 <style>
 
@@ -12,198 +16,788 @@
     box-sizing: border-box;
 }
 
+
 body {
+
     margin: 0;
+
     min-height: 100vh;
 
     font-family: Arial, sans-serif;
 
-    background: #111827;
+    background:
+        radial-gradient(
+            circle at top left,
+            #374151,
+            transparent 40%
+        ),
+        #111827;
+
     color: white;
 
     display: flex;
+
     justify-content: center;
+
     align-items: center;
+
+    padding: 20px;
+
 }
 
+
+/* =========================
+   PANEL
+========================= */
+
 .panel {
-    width: 90%;
+
+    width: 100%;
+
     max-width: 500px;
 
-    background: #1f2937;
+    background:
+        rgba(31,41,55,0.95);
 
     border-radius: 25px;
 
     padding: 30px;
 
-    text-align: center;
+    box-shadow:
+        0 20px 60px
+        rgba(0,0,0,0.4);
+
 }
+
+
+/* =========================
+   NAGŁÓWEK
+========================= */
 
 h1 {
+
+    text-align: center;
+
     margin-top: 0;
+
+    margin-bottom: 30px;
+
 }
 
-button {
-    width: 100%;
 
-    border: 0;
-    border-radius: 15px;
-
-    padding: 25px;
-
-    margin-top: 15px;
-
-    font-size: 25px;
-    font-weight: bold;
-
-    color: white;
-
-    cursor: pointer;
-}
-
-.open {
-    background: #16a34a;
-}
-
-.closed {
-    background: #dc2626;
-}
+/* =========================
+   LOGOWANIE
+========================= */
 
 input {
-    width: 100%;
 
-    margin-top: 15px;
+    width: 100%;
 
     padding: 15px;
 
-    border-radius: 12px;
+    margin-top: 12px;
 
     border: none;
 
-    font-size: 18px;
+    border-radius: 12px;
+
+    font-size: 17px;
+
+    outline: none;
+
 }
 
+
+button {
+
+    width: 100%;
+
+    border: none;
+
+    border-radius: 14px;
+
+    padding: 18px;
+
+    margin-top: 15px;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    color: white;
+
+    transition: 0.2s;
+
+}
+
+
+button:hover {
+
+    transform: scale(1.02);
+
+}
+
+
+.login {
+
+    background: #2563eb;
+
+}
+
+
+.open {
+
+    background:
+        linear-gradient(
+            135deg,
+            #22c55e,
+            #15803d
+        );
+
+}
+
+
+.closed {
+
+    background:
+        linear-gradient(
+            135deg,
+            #ef4444,
+            #991b1b
+        );
+
+}
+
+
+.logout {
+
+    background: #374151;
+
+    font-size: 15px;
+
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+.current {
+
+    text-align: center;
+
+    padding: 25px;
+
+    margin-bottom: 20px;
+
+    border-radius: 18px;
+
+    background: #111827;
+
+}
+
+
+.current-status {
+
+    font-size: 35px;
+
+    font-weight: bold;
+
+}
+
+
+.online {
+
+    color: #4ade80;
+
+}
+
+
+.offline {
+
+    color: #f87171;
+
+}
+
+
+/* =========================
+   KOMUNIKAT
+========================= */
+
 #result {
+
+    text-align: center;
+
     margin-top: 20px;
+
+    min-height: 25px;
+
+}
+
+
+/* =========================
+   UKRYWANIE
+========================= */
+
+.hidden {
+
+    display: none;
+
+}
+
+
+.small {
+
+    text-align: center;
+
+    color: #9ca3af;
+
+    font-size: 13px;
+
+    margin-top: 20px;
+
 }
 
 </style>
+
 </head>
+
 
 <body>
 
+
 <div class="panel">
 
-    <h1>STATUS DRZWI</h1>
 
-    <button
-        class="open"
-        onclick="zmienStatus(true)">
-        🟢 OTWÓRZ
-    </button>
+<!-- =================================
+     LOGOWANIE
+================================= -->
 
-    <button
-        class="closed"
-        onclick="zmienStatus(false)">
-        🔴 ZAMKNIJ
-    </button>
+<div id="loginPanel">
+
+    <h1>
+        PANEL STATUSU
+    </h1>
+
 
     <input
-        id="mode"
-        placeholder="Tryb"
-        value="Normalny">
+        id="email"
+        type="email"
+        placeholder="E-mail">
+
 
     <input
-        id="message"
-        placeholder="Komunikat">
+        id="password"
+        type="password"
+        placeholder="Hasło">
 
-    <div id="result"></div>
+
+    <button
+        class="login"
+        onclick="zaloguj()">
+
+        ZALOGUJ
+
+    </button>
+
+
+    <div
+        id="loginResult">
+    </div>
 
 </div>
 
 
+
+<!-- =================================
+     PANEL ADMINA
+================================= -->
+
+<div
+    id="adminPanel"
+    class="hidden">
+
+
+    <h1>
+        STATUS DRZWI
+    </h1>
+
+
+    <div class="current">
+
+        Aktualny status:
+
+        <div
+            id="currentStatus"
+            class="current-status">
+
+            ...
+
+        </div>
+
+    </div>
+
+
+
+    <!-- OTWARCIE -->
+
+    <button
+        class="open"
+        onclick="zmienStatus(true)">
+
+        🟢 OTWARTE
+
+    </button>
+
+
+    <!-- ZAMKNIĘCIE -->
+
+    <button
+        class="closed"
+        onclick="zmienStatus(false)">
+
+        🔴 ZAMKNIĘTE
+
+    </button>
+
+
+
+    <!-- TRYB -->
+
+    <input
+        id="mode"
+        type="text"
+        placeholder="Tryb"
+        value="Normalny">
+
+
+
+    <!-- KOMUNIKAT -->
+
+    <input
+        id="message"
+        type="text"
+        placeholder="Komunikat">
+
+
+
+    <button
+        class="login"
+        onclick="zapiszDodatkowe()">
+
+        ZAPISZ TRYB / KOMUNIKAT
+
+    </button>
+
+
+
+    <button
+        class="logout"
+        onclick="wyloguj()">
+
+        WYLOGUJ
+
+    </button>
+
+
+    <div
+        id="result">
+    </div>
+
+
+    <div class="small">
+
+        Połączenie z Supabase
+
+    </div>
+
+</div>
+
+
+</div>
+
+
+<!-- =================================
+     SUPABASE JS
+================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
+
+
 <script>
+
+/* =================================
+   KONFIGURACJA
+================================= */
 
 const SUPABASE_URL =
     "https://hktkcaskbjaungabrilw.supabase.co";
 
+
 const SUPABASE_KEY =
-    "TWOJ_ANON_KEY";
+    "sb_publishable_KLUzRcddw5TfzHtodWpxTQ_NCPjqU0F";
 
 
-async function zmienStatus(isOpen) {
-
-    const mode =
-        document.getElementById("mode").value;
-
-    const message =
-        document.getElementById("message").value;
+const {
+    createClient
+} = supabase;
 
 
-    try {
+const db =
+    createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
-        const response = await fetch(
-            SUPABASE_URL +
-            "/rest/v1/door_status?id=eq.1",
-            {
 
-                method: "PATCH",
+/* =================================
+   LOGOWANIE
+================================= */
 
-                headers: {
+async function zaloguj() {
 
-                    "apikey": SUPABASE_KEY,
+    const email =
+        document.getElementById(
+            "email"
+        ).value.trim();
 
-                    "Authorization":
-                        "Bearer " + SUPABASE_KEY,
 
-                    "Content-Type":
-                        "application/json",
+    const password =
+        document.getElementById(
+            "password"
+        ).value;
 
-                    "Prefer":
-                        "return=minimal"
-                },
 
-                body: JSON.stringify({
-
-                    is_open: isOpen,
-
-                    mode: mode,
-
-                    message: message,
-
-                    updated_at:
-                        new Date().toISOString()
-
-                })
-            }
+    const result =
+        document.getElementById(
+            "loginResult"
         );
 
 
-        if (!response.ok) {
-
-            throw new Error(
-                "Nie udało się zmienić statusu"
-            );
-
-        }
+    result.textContent =
+        "Logowanie...";
 
 
-        document.getElementById("result").textContent =
-            isOpen
-                ? "🟢 Ustawiono OTWARTE"
-                : "🔴 Ustawiono ZAMKNIĘTE";
+    const {
+        data,
+        error
+    } =
+        await db.auth.signInWithPassword({
+
+            email: email,
+
+            password: password
+
+        });
 
 
-    } catch (error) {
+    if (error) {
 
-        document.getElementById("result").textContent =
+        result.textContent =
             "❌ " + error.message;
+
+        return;
+
+    }
+
+
+    result.textContent =
+        "";
+
+
+    pokazPanel();
+
+}
+
+
+/* =================================
+   POKAŻ PANEL
+================================= */
+
+function pokazPanel() {
+
+    document
+        .getElementById(
+            "loginPanel"
+        )
+        .classList
+        .add("hidden");
+
+
+    document
+        .getElementById(
+            "adminPanel"
+        )
+        .classList
+        .remove("hidden");
+
+
+    pobierzStatus();
+
+}
+
+
+/* =================================
+   POBIERZ STATUS
+================================= */
+
+async function pobierzStatus() {
+
+    const {
+        data,
+        error
+    } =
+        await db
+        .from("door_status")
+        .select(
+            "is_open,mode,message"
+        )
+        .eq("id", 1)
+        .single();
+
+
+    if (error) {
+
+        document
+            .getElementById(
+                "currentStatus"
+            )
+            .textContent =
+            "BŁĄD";
+
+
+        console.error(error);
+
+        return;
+
+    }
+
+
+    document
+        .getElementById(
+            "currentStatus"
+        )
+        .textContent =
+        data.is_open
+            ? "🟢 OTWARTE"
+            : "🔴 ZAMKNIĘTE";
+
+
+    document
+        .getElementById(
+            "currentStatus"
+        )
+        .className =
+        data.is_open
+            ? "current-status online"
+            : "current-status offline";
+
+
+    document
+        .getElementById(
+            "mode"
+        )
+        .value =
+        data.mode || "Normalny";
+
+
+    document
+        .getElementById(
+            "message"
+        )
+        .value =
+        data.message || "";
+
+}
+
+
+/* =================================
+   ZMIEŃ OTWARTE / ZAMKNIĘTE
+================================= */
+
+async function zmienStatus(
+    isOpen
+) {
+
+    const result =
+        document.getElementById(
+            "result"
+        );
+
+
+    result.textContent =
+        "Zapisywanie...";
+
+
+    const {
+        error
+    } =
+        await db
+        .from("door_status")
+        .update({
+
+            is_open: isOpen,
+
+            updated_at:
+                new Date().toISOString()
+
+        })
+        .eq("id", 1);
+
+
+    if (error) {
+
+        console.error(error);
+
+        result.textContent =
+            "❌ " +
+            error.message;
+
+        return;
+
+    }
+
+
+    result.textContent =
+        isOpen
+            ? "🟢 Ustawiono OTWARTE"
+            : "🔴 Ustawiono ZAMKNIĘTE";
+
+
+    pobierzStatus();
+
+}
+
+
+/* =================================
+   TRYB + KOMUNIKAT
+================================= */
+
+async function zapiszDodatkowe() {
+
+    const mode =
+        document
+        .getElementById(
+            "mode"
+        )
+        .value;
+
+
+    const message =
+        document
+        .getElementById(
+            "message"
+        )
+        .value;
+
+
+    const result =
+        document.getElementById(
+            "result"
+        );
+
+
+    result.textContent =
+        "Zapisywanie...";
+
+
+    const {
+        error
+    } =
+        await db
+        .from("door_status")
+        .update({
+
+            mode: mode,
+
+            message: message,
+
+            updated_at:
+                new Date().toISOString()
+
+        })
+        .eq("id", 1);
+
+
+    if (error) {
+
+        console.error(error);
+
+        result.textContent =
+            "❌ " +
+            error.message;
+
+        return;
+
+    }
+
+
+    result.textContent =
+        "✅ Zapisano";
+
+
+    pobierzStatus();
+
+}
+
+
+/* =================================
+   WYLOGOWANIE
+================================= */
+
+async function wyloguj() {
+
+    await db.auth.signOut();
+
+
+    document
+        .getElementById(
+            "adminPanel"
+        )
+        .classList
+        .add("hidden");
+
+
+    document
+        .getElementById(
+            "loginPanel"
+        )
+        .classList
+        .remove("hidden");
+
+}
+
+
+/* =================================
+   SPRAWDŹ SESJĘ
+================================= */
+
+async function sprawdzSesje() {
+
+    const {
+        data
+    } =
+        await db.auth.getSession();
+
+
+    if (
+        data.session
+    ) {
+
+        pokazPanel();
 
     }
 
 }
 
+
+sprawdzSesje();
+
 </script>
+
 
 </body>
 </html>
