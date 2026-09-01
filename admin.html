@@ -1267,3 +1267,25 @@ setInterval(
 </body>
 
 </html>
+
+function przylozKarte() {
+
+    cardArea.classList.add("hidden");
+
+    document.body.classList.remove(
+        "emergency",
+        "closed"
+    );
+
+    document.body.classList.add("open");
+
+    icon.textContent = "🔓";
+
+    status.textContent = "OTWARTE";
+
+    message.textContent = "KARTA ZAAKCEPTOWANA";
+
+    setTimeout(async () => {
+        await loadStatus();
+    }, 5000);
+}
