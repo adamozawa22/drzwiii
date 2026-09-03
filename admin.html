@@ -159,6 +159,44 @@
     font-size:13px; color:var(--muted);
   }
   .artykul-checkbox input{ width:auto; margin:0; }
+
+  .sekcja-alarm{
+    border-color: rgba(255,75,62,0.35);
+  }
+  .sekcja-alarm textarea{
+    width:100%;
+    min-height:120px;
+    padding:12px 14px;
+    background:var(--panel2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--text);
+    font-family:inherit;
+    font-size:14px;
+    resize:vertical;
+    margin-bottom:14px;
+  }
+  .sekcja-alarm textarea:focus{ outline:2px solid var(--red); border-color:transparent; }
+  .alarm-przyciski{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .btn-alarm{
+    padding:12px 22px;
+    border-radius:10px;
+    font-weight:800;
+    font-size:14px;
+    letter-spacing:0.03em;
+    background:var(--red);
+    color:#fff;
+  }
+  .btn-alarm:hover{ filter:brightness(1.08); }
+  .btn-alarm.wlaczony{
+    background:transparent;
+    border:1px solid var(--red);
+    color:var(--red);
+  }
 </style>
 </head>
 <body>
@@ -201,10 +239,21 @@
   </div>
 
   <div class="sekcja">
-    <h2>ARTYKUŁY NA PRZERWĘ (wyświetlają się na dole ekranu, jedna linijka = jeden punkt)</h2>
+    <h2>ARTYKUŁ / OGŁOSZENIE (pokazuje się na dole TV tylko gdy zaznaczysz "aktywny")</h2>
     <div id="lista-artykuly"></div>
     <button class="btn-dodaj" onclick="dodajArtykul()">+ dodaj artykuł</button>
     <div id="status-art" class="status"></div>
+  </div>
+
+  <div class="sekcja sekcja-alarm">
+    <h2>ALARM POŻAROWY (pełny ekran na wszystkich TV, dopóki nie wyłączysz)</h2>
+    <input id="alarm-tytul" type="text" placeholder="Tytuł">
+    <textarea id="alarm-tresc" placeholder="Jedna linijka = jeden punkt na ekranie"></textarea>
+    <div class="alarm-przyciski">
+      <button class="btn-mini btn-zapisz" onclick="zapiszTrescAlarmu()">zapisz treść</button>
+      <button id="btn-alarm-toggle" class="btn-alarm" onclick="przelaczAlarm()">OGŁOŚ ALARM</button>
+    </div>
+    <div id="status-alarm" class="status"></div>
   </div>
 </div>
 
@@ -247,6 +296,7 @@
     elApp.classList.add('widoczny');
     await wczytaj();
     await wczytajArtykuly();
+    await wczytajAlarm();
   }
 
   async function wczytaj(){
@@ -426,7 +476,7 @@
       tytul: 'Nowy artykuł',
       tresc: 'Pierwszy punkt\nDrugi punkt',
       kolejnosc: artykuly.length + 1,
-      aktywny: true
+      aktywny: false
     };
     const { error } = await sb.from('artykuly').insert(nowy);
     if(error){
@@ -440,6 +490,74 @@
     elStatusArt.textContent = tekst;
     elStatusArt.className = 'status ' + (czyBlad ? 'blad' : 'ok');
     setTimeout(() => { elStatusArt.textContent = ''; }, 3000);
+  }
+
+  // ---------------- ALARM POŻAROWY ----------------
+
+  const elAlarmTytulInput = document.getElementById('alarm-tytul');
+  const elAlarmTrescInput = document.getElementById('alarm-tresc');
+  const elBtnAlarmToggle = document.getElementById('btn-alarm-toggle');
+  const elStatusAlarm = document.getElementById('status-alarm');
+  let alarm = null;
+
+  async function wczytajAlarm(){
+    const { data, error } = await sb.from('alarm_pozarowy').select('*').eq('id', 1).single();
+    if(error){
+      pokazStatusAlarm('Błąd wczytywania: ' + error.message, true);
+      return;
+    }
+    alarm = data;
+    elAlarmTytulInput.value = alarm.tytul;
+    elAlarmTrescInput.value = alarm.tresc;
+    odswiezPrzyciskAlarmu();
+  }
+
+  function odswiezPrzyciskAlarmu(){
+    if(alarm && alarm.aktywny){
+      elBtnAlarmToggle.textContent = 'WYŁĄCZ ALARM';
+      elBtnAlarmToggle.classList.add('wlaczony');
+    } else {
+      elBtnAlarmToggle.textContent = 'OGŁOŚ ALARM';
+      elBtnAlarmToggle.classList.remove('wlaczony');
+    }
+  }
+
+  async function zapiszTrescAlarmu(){
+    const tytul = elAlarmTytulInput.value.trim();
+    const tresc = elAlarmTrescInput.value.trim();
+    if(!tytul || !tresc){
+      pokazStatusAlarm('Uzupełnij tytuł i treść.', true);
+      return;
+    }
+    const { error } = await sb.from('alarm_pozarowy').update({ tytul, tresc }).eq('id', 1);
+    if(error){
+      pokazStatusAlarm('Błąd zapisu: ' + error.message, true);
+      return;
+    }
+    pokazStatusAlarm('Zapisano treść.', false);
+    await wczytajAlarm();
+  }
+
+  async function przelaczAlarm(){
+    const wlaczyc = !(alarm && alarm.aktywny);
+    const potwierdzenie = wlaczyc
+      ? 'Ogłosić alarm pożarowy na wszystkich TV? Ekran natychmiast przełączy się na instrukcje ewakuacji.'
+      : 'Wyłączyć alarm i wrócić do normalnego widoku na TV?';
+    if(!confirm(potwierdzenie)) return;
+
+    const { error } = await sb.from('alarm_pozarowy').update({ aktywny: wlaczyc }).eq('id', 1);
+    if(error){
+      pokazStatusAlarm('Błąd: ' + error.message, true);
+      return;
+    }
+    pokazStatusAlarm(wlaczyc ? 'Alarm ogłoszony.' : 'Alarm wyłączony.', false);
+    await wczytajAlarm();
+  }
+
+  function pokazStatusAlarm(tekst, czyBlad){
+    elStatusAlarm.textContent = tekst;
+    elStatusAlarm.className = 'status ' + (czyBlad ? 'blad' : 'ok');
+    setTimeout(() => { elStatusAlarm.textContent = ''; }, 3000);
   }
 
   // jeśli sesja już aktywna (np. odświeżenie strony), wejdź od razu do panelu
