@@ -25,16 +25,7 @@
     font-family:'Manrope', sans-serif;
     overflow:hidden;
   }
-  .wrap{
-    height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:clamp(16px, 3vh, 40px);
-    padding:4vh 4vw;
-    text-align:center;
-  }
+
   .topbar{
     position:absolute;
     top:0; left:0; right:0;
@@ -45,8 +36,64 @@
     font-size:clamp(14px, 1.4vw, 20px);
     color:var(--muted);
     letter-spacing:0.03em;
+    z-index:2;
   }
   .topbar span:last-child{ color:var(--text); }
+
+  /* ---- belka przerwy (góra) ---- */
+  .belka-przerwa{
+    position:fixed;
+    top:0; left:0; right:0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:22px 48px;
+    background: linear-gradient(90deg, rgba(79,209,197,0.14), rgba(79,209,197,0.03));
+    border-bottom:1px solid rgba(79,209,197,0.35);
+    transform: translateY(-100%);
+    opacity:0;
+    z-index:5;
+  }
+  .belka-przerwa.widoczna{
+    transform: translateY(0);
+    opacity:1;
+    transition: transform 0.7s cubic-bezier(.22,.85,.3,1), opacity 0.6s ease;
+  }
+  .belka-lewo{
+    display:flex; align-items:center; gap:14px;
+    font-size:clamp(16px, 1.9vw, 26px);
+    font-weight:700;
+  }
+  .belka-kropka{
+    width:12px; height:12px; border-radius:50%;
+    background:var(--teal);
+    animation: pulsuj 1.4s ease-in-out infinite;
+  }
+  @keyframes pulsuj{ 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
+  .belka-czas{
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    font-size:clamp(30px, 4.4vw, 60px);
+    color:var(--teal);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- normalny widok (lekcja / brak planu / koniec) ---- */
+  .wrap{
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:clamp(16px, 3vh, 40px);
+    padding:4vh 4vw;
+    text-align:center;
+    transition: opacity 0.5s ease;
+  }
+  .wrap.przerwa-aktywna{
+    opacity:0;
+    pointer-events:none;
+  }
 
   .stan-pill{
     display:inline-flex;
@@ -64,7 +111,6 @@
     width:10px; height:10px; border-radius:50%;
     background: var(--amber);
   }
-  .stan-pill.przerwa .dot{ background: var(--teal); }
   .stan-pill.koniec .dot{ background: var(--muted); }
 
   .etykieta{
@@ -82,7 +128,6 @@
     color:var(--amber);
     font-variant-numeric: tabular-nums;
   }
-  .czas.przerwa{ color:var(--teal); }
   .czas.pilne{ color:var(--red); }
   .czas.koniec{ color:var(--muted); font-size:clamp(48px, 8vw, 100px); }
 
@@ -105,7 +150,6 @@
     width:0%;
     transition:width 1s linear;
   }
-  .pasek-wypelnienie.przerwa{ background:var(--teal); }
 
   .nastepnie{
     font-size:clamp(14px, 1.4vw, 18px);
@@ -113,12 +157,54 @@
   }
   .nastepnie b{ color:var(--text); font-weight:700; }
 
+  /* ---- sekcja artykułu (dół, tylko na przerwie) ---- */
+  .sekcja-artykul{
+    position:fixed;
+    bottom:0; left:0; right:0;
+    padding:8vh 8vw 10vh;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:26px;
+    z-index:3;
+  }
+  .sekcja-artykul.widoczna{ display:flex; }
+
+  .artykul-tytul{
+    font-size:clamp(20px, 2.6vw, 34px);
+    font-weight:800;
+    color:var(--teal);
+    opacity:0;
+  }
+  .artykul-tytul.widoczna{ animation: wjazdLinia 0.55s ease-out forwards; }
+
+  .artykul-linie{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    max-width:900px;
+  }
+  .linia-artykulu{
+    font-size:clamp(18px, 2.2vw, 28px);
+    font-weight:600;
+    color:var(--text);
+    opacity:0;
+  }
+  .linia-artykulu.widoczna{ animation: wjazdLinia 0.55s ease-out forwards; }
+
+  @keyframes wjazdLinia{
+    from{ opacity:0; transform: translateY(28px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
   .blad{
-    position:fixed; bottom:20px; left:0; right:0;
+    position:fixed; bottom:16px; left:0; right:0;
     text-align:center;
     color:var(--red);
     font-family:'Space Mono', monospace;
-    font-size:14px;
+    font-size:13px;
+    z-index:6;
   }
 </style>
 </head>
@@ -129,7 +215,15 @@
   <span id="zegar"></span>
 </div>
 
-<div class="wrap">
+<div id="belka-przerwa" class="belka-przerwa">
+  <div class="belka-lewo">
+    <span class="belka-kropka"></span>
+    <span>Przerwa — powrót na lekcję za</span>
+  </div>
+  <div id="belka-czas" class="belka-czas">--:--</div>
+</div>
+
+<div id="wrap" class="wrap">
   <div id="pill" class="stan-pill">
     <span class="dot"></span>
     <span id="stan-tekst">Ładowanie…</span>
@@ -147,18 +241,25 @@
   <div id="nastepnie" class="nastepnie"></div>
 </div>
 
+<div id="sekcja-artykul" class="sekcja-artykul">
+  <div id="artykul-tytul" class="artykul-tytul"></div>
+  <div id="artykul-linie" class="artykul-linie"></div>
+</div>
+
 <div id="blad" class="blad"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // ---- UZUPEŁNIJ SWOIMI DANYMI Z SUPABASE (Project Settings -> API) ----
   const SUPABASE_URL = "https://cedmjyrqjcvabdmyjmzd.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_tu9CPL3sPtKJaVqTiPDc4A_trd1nsJ6";
-  // -----------------------------------------------------------------------
 
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  let plan = []; // [{etykieta, typ, start_czas, koniec_czas}]
+  let plan = [];
+  let artykuly = [];
+  let stanPrzerwyAktywny = false;
+  let indeksArtykulu = 0;
+  let timeoutyArtykulu = [];
 
   const elZegar = document.getElementById('zegar');
   const elData = document.getElementById('data');
@@ -170,11 +271,16 @@
   const elPasek = document.getElementById('pasek');
   const elNastepnie = document.getElementById('nastepnie');
   const elBlad = document.getElementById('blad');
+  const elWrap = document.getElementById('wrap');
+  const elBelka = document.getElementById('belka-przerwa');
+  const elBelkaCzas = document.getElementById('belka-czas');
+  const elSekcjaArtykul = document.getElementById('sekcja-artykul');
+  const elArtykulTytul = document.getElementById('artykul-tytul');
+  const elArtykulLinie = document.getElementById('artykul-linie');
 
   const DNI = ['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
 
   function toSekundy(t){
-    // t: "HH:MM:SS" lub "HH:MM"
     const [h,m,s] = t.split(':').map(Number);
     return h*3600 + m*60 + (s||0);
   }
@@ -205,6 +311,87 @@
     plan = data;
   }
 
+  async function wczytajArtykuly(){
+    const { data, error } = await sb
+      .from('artykuly')
+      .select('*')
+      .eq('aktywny', true)
+      .order('kolejnosc', { ascending: true });
+
+    if(error){
+      elBlad.textContent = 'Błąd wczytywania artykułów: ' + error.message;
+      return;
+    }
+    artykuly = data || [];
+  }
+
+  function wyczyscTimeoutyArtykulu(){
+    timeoutyArtykulu.forEach(t => clearTimeout(t));
+    timeoutyArtykulu = [];
+  }
+
+  function pokazArtykul(idx){
+    wyczyscTimeoutyArtykulu();
+    elArtykulTytul.className = 'artykul-tytul';
+    elArtykulLinie.innerHTML = '';
+
+    if(!artykuly.length){
+      elArtykulTytul.textContent = 'Brak artykułów';
+      elArtykulTytul.classList.add('widoczna');
+      const div = document.createElement('div');
+      div.className = 'linia-artykulu widoczna';
+      div.textContent = 'Dodaj treść w panelu admina.';
+      elArtykulLinie.appendChild(div);
+      return;
+    }
+
+    const art = artykuly[idx % artykuly.length];
+    elArtykulTytul.textContent = art.tytul || '';
+
+    const linie = (art.tresc || '')
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean);
+
+    const elementyLinii = linie.map(tekst => {
+      const div = document.createElement('div');
+      div.className = 'linia-artykulu';
+      div.textContent = tekst;
+      elArtykulLinie.appendChild(div);
+      return div;
+    });
+
+    timeoutyArtykulu.push(setTimeout(() => elArtykulTytul.classList.add('widoczna'), 100));
+    elementyLinii.forEach((el, i) => {
+      timeoutyArtykulu.push(setTimeout(() => el.classList.add('widoczna'), 650 + i * 550));
+    });
+
+    const czasDoNastepnego = 650 + linie.length * 550 + 6000;
+    timeoutyArtykulu.push(setTimeout(() => {
+      indeksArtykulu = (idx + 1) % artykuly.length;
+      pokazArtykul(indeksArtykulu);
+    }, czasDoNastepnego));
+  }
+
+  function wlaczPrzerwaUI(){
+    if(stanPrzerwyAktywny) return;
+    stanPrzerwyAktywny = true;
+    elBelka.classList.add('widoczna');
+    elWrap.classList.add('przerwa-aktywna');
+    elSekcjaArtykul.classList.add('widoczna');
+    indeksArtykulu = 0;
+    pokazArtykul(indeksArtykulu);
+  }
+
+  function wylaczPrzerwaUI(){
+    if(!stanPrzerwyAktywny) return;
+    stanPrzerwyAktywny = false;
+    elBelka.classList.remove('widoczna');
+    elWrap.classList.remove('przerwa-aktywna');
+    elSekcjaArtykul.classList.remove('widoczna');
+    wyczyscTimeoutyArtykulu();
+  }
+
   function tick(){
     const teraz = new Date();
     const sekTeraz = teraz.getHours()*3600 + teraz.getMinutes()*60 + teraz.getSeconds();
@@ -213,6 +400,7 @@
     elData.textContent = DNI[teraz.getDay()] + ', ' + teraz.toLocaleDateString('pl-PL');
 
     if(!plan.length){
+      wylaczPrzerwaUI();
       renderBrakPlanu();
       return;
     }
@@ -228,12 +416,19 @@
       const postep = ((sekTeraz - s) / (e - s)) * 100;
       const jestPrzerwa = aktualny.typ === 'przerwa';
 
-      renderAktywny(aktualny, pozostalo, postep, jestPrzerwa);
+      if(jestPrzerwa){
+        wlaczPrzerwaUI();
+        elBelkaCzas.textContent = formatCzas(pozostalo);
+      } else {
+        wylaczPrzerwaUI();
+        renderAktywny(aktualny, pozostalo, postep);
+      }
       renderNastepny(sekTeraz);
       return;
     }
 
-    // brak aktywnego okresu -> szukaj najbliższego następnego
+    wylaczPrzerwaUI();
+
     const przyszle = plan
       .map(p => ({...p, s: toSekundy(p.start_czas)}))
       .filter(p => p.s > sekTeraz)
@@ -249,18 +444,17 @@
     }
   }
 
-  function renderAktywny(p, pozostalo, postep, jestPrzerwa){
-    elPill.className = 'stan-pill' + (jestPrzerwa ? ' przerwa' : '');
-    elStanTekst.textContent = jestPrzerwa ? 'trwa przerwa' : 'trwa lekcja';
+  function renderAktywny(p, pozostalo, postep){
+    elPill.className = 'stan-pill';
+    elStanTekst.textContent = 'trwa lekcja';
 
     elEtykieta.textContent = p.etykieta;
 
-    elCzas.className = 'czas' + (jestPrzerwa ? ' przerwa' : '') + (!jestPrzerwa && pozostalo <= 120 ? ' pilne' : '');
+    elCzas.className = 'czas' + (pozostalo <= 120 ? ' pilne' : '');
     elCzas.textContent = formatCzas(pozostalo);
 
-    elPodpis.textContent = jestPrzerwa ? 'do końca przerwy' : 'do końca lekcji';
+    elPodpis.textContent = 'do końca lekcji';
 
-    elPasek.className = 'pasek-wypelnienie' + (jestPrzerwa ? ' przerwa' : '');
     elPasek.style.width = Math.min(100, Math.max(0, postep)) + '%';
   }
 
@@ -308,18 +502,22 @@
     }
   }
 
-  // realtime: gdy admin zmieni plan, TV wczyta go od razu na nowo
+  // realtime: natychmiastowe wczytanie po zmianie w adminie
   sb.channel('dzwonki-live')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'dzwonki' }, () => {
-      wczytajPlan();
-    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'dzwonki' }, () => wczytajPlan())
+    .subscribe();
+
+  sb.channel('artykuly-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'artykuly' }, () => wczytajArtykuly())
     .subscribe();
 
   wczytajPlan();
+  wczytajArtykuly();
   tick();
   setInterval(tick, 1000);
-  // dodatkowe odświeżenie planu co 5 min, na wszelki wypadek
-  setInterval(wczytajPlan, 5 * 60 * 1000);
+  // dodatkowe automatyczne odświeżanie danych co 10 sekund (niezależnie od realtime)
+  setInterval(wczytajPlan, 10 * 1000);
+  setInterval(wczytajArtykuly, 10 * 1000);
 </script>
 </body>
 </html>
