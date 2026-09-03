@@ -157,24 +157,30 @@
   }
   .nastepnie b{ color:var(--text); font-weight:700; }
 
-  /* ---- sekcja artykułu (dół, tylko na przerwie) ---- */
+  /* ---- sekcja artykułu (dół), sterowana ręcznie z admina, niezależna od lekcji/przerwy ---- */
   .sekcja-artykul{
     position:fixed;
     bottom:0; left:0; right:0;
-    padding:8vh 8vw 10vh;
+    padding:5vh 8vw;
     display:none;
     flex-direction:column;
-    align-items:center;
-    text-align:center;
-    gap:26px;
-    z-index:3;
+    gap:28px;
+    z-index:4;
+    background: linear-gradient(0deg, rgba(10,12,15,0.96) 45%, rgba(10,12,15,0));
   }
   .sekcja-artykul.widoczna{ display:flex; }
 
+  .artykul-blok{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:14px;
+  }
   .artykul-tytul{
-    font-size:clamp(20px, 2.6vw, 34px);
+    font-size:clamp(18px, 2.2vw, 28px);
     font-weight:800;
-    color:var(--teal);
+    color:var(--amber);
     opacity:0;
   }
   .artykul-tytul.widoczna{ animation: wjazdLinia 0.55s ease-out forwards; }
@@ -182,11 +188,11 @@
   .artykul-linie{
     display:flex;
     flex-direction:column;
-    gap:16px;
+    gap:10px;
     max-width:900px;
   }
   .linia-artykulu{
-    font-size:clamp(18px, 2.2vw, 28px);
+    font-size:clamp(15px, 1.7vw, 21px);
     font-weight:600;
     color:var(--text);
     opacity:0;
@@ -194,9 +200,59 @@
   .linia-artykulu.widoczna{ animation: wjazdLinia 0.55s ease-out forwards; }
 
   @keyframes wjazdLinia{
-    from{ opacity:0; transform: translateY(28px); }
+    from{ opacity:0; transform: translateY(24px); }
     to{ opacity:1; transform: translateY(0); }
   }
+
+  /* ---- alarm pożarowy: pełny ekran, nadpisuje wszystko ---- */
+  .alarm-overlay{
+    position:fixed; inset:0;
+    z-index:999;
+    background: radial-gradient(circle at 50% 10%, rgba(255,75,62,0.28), rgba(8,3,3,0.98) 62%);
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:6vh 8vw;
+    gap:32px;
+    box-shadow: inset 0 0 0 10px rgba(255,75,62,0.55);
+  }
+  .alarm-overlay.widoczny{
+    display:flex;
+    animation: obwodkaAlarmu 1.2s ease-in-out infinite;
+  }
+  @keyframes obwodkaAlarmu{
+    0%,100%{ box-shadow: inset 0 0 0 10px rgba(255,75,62,0.55); }
+    50%{ box-shadow: inset 0 0 0 10px rgba(255,75,62,0.15); }
+  }
+  .alarm-naglowek{
+    font-size:clamp(34px, 6vw, 90px);
+    font-weight:800;
+    color:var(--red);
+    letter-spacing:0.03em;
+    animation: pulsuj 1s ease-in-out infinite;
+  }
+  .alarm-tytul{
+    font-size:clamp(20px, 2.4vw, 30px);
+    font-weight:700;
+    color:#ffffff;
+    opacity:0;
+  }
+  .alarm-tytul.widoczna{ animation: wjazdLinia 0.5s ease-out forwards; }
+  .alarm-linie{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    max-width:900px;
+  }
+  .alarm-linia{
+    font-size:clamp(19px, 2.3vw, 29px);
+    font-weight:600;
+    color:#ffffff;
+    opacity:0;
+  }
+  .alarm-linia.widoczna{ animation: wjazdLinia 0.5s ease-out forwards; }
 
   .blad{
     position:fixed; bottom:16px; left:0; right:0;
@@ -204,7 +260,7 @@
     color:var(--red);
     font-family:'Space Mono', monospace;
     font-size:13px;
-    z-index:6;
+    z-index:1000;
   }
 </style>
 </head>
@@ -241,9 +297,12 @@
   <div id="nastepnie" class="nastepnie"></div>
 </div>
 
-<div id="sekcja-artykul" class="sekcja-artykul">
-  <div id="artykul-tytul" class="artykul-tytul"></div>
-  <div id="artykul-linie" class="artykul-linie"></div>
+<div id="sekcja-artykul" class="sekcja-artykul"></div>
+
+<div id="alarm-overlay" class="alarm-overlay">
+  <div class="alarm-naglowek">⚠ ALARM POŻAROWY</div>
+  <div id="alarm-tytul" class="alarm-tytul"></div>
+  <div id="alarm-linie" class="alarm-linie"></div>
 </div>
 
 <div id="blad" class="blad"></div>
@@ -257,9 +316,11 @@
 
   let plan = [];
   let artykuly = [];
+  let alarm = null;
+
   let stanPrzerwyAktywny = false;
-  let indeksArtykulu = 0;
-  let timeoutyArtykulu = [];
+  let ostatniKluczArtykulow = null;
+  let alarmByloAktywne = false;
 
   const elZegar = document.getElementById('zegar');
   const elData = document.getElementById('data');
@@ -275,8 +336,9 @@
   const elBelka = document.getElementById('belka-przerwa');
   const elBelkaCzas = document.getElementById('belka-czas');
   const elSekcjaArtykul = document.getElementById('sekcja-artykul');
-  const elArtykulTytul = document.getElementById('artykul-tytul');
-  const elArtykulLinie = document.getElementById('artykul-linie');
+  const elAlarmOverlay = document.getElementById('alarm-overlay');
+  const elAlarmTytul = document.getElementById('alarm-tytul');
+  const elAlarmLinie = document.getElementById('alarm-linie');
 
   const DNI = ['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
 
@@ -302,11 +364,7 @@
       .select('*')
       .order('start_czas', { ascending: true })
       .order('kolejnosc', { ascending: true });
-
-    if(error){
-      elBlad.textContent = 'Błąd wczytywania planu: ' + error.message;
-      return;
-    }
+    if(error){ elBlad.textContent = 'Błąd wczytywania planu: ' + error.message; return; }
     elBlad.textContent = '';
     plan = data;
   }
@@ -315,72 +373,105 @@
     const { data, error } = await sb
       .from('artykuly')
       .select('*')
-      .eq('aktywny', true)
       .order('kolejnosc', { ascending: true });
-
-    if(error){
-      elBlad.textContent = 'Błąd wczytywania artykułów: ' + error.message;
-      return;
-    }
+    if(error){ elBlad.textContent = 'Błąd wczytywania artykułów: ' + error.message; return; }
     artykuly = data || [];
   }
 
-  function wyczyscTimeoutyArtykulu(){
-    timeoutyArtykulu.forEach(t => clearTimeout(t));
-    timeoutyArtykulu = [];
+  async function wczytajAlarm(){
+    const { data, error } = await sb
+      .from('alarm_pozarowy')
+      .select('*')
+      .eq('id', 1)
+      .single();
+    if(error){ elBlad.textContent = 'Błąd wczytywania alarmu: ' + error.message; return; }
+    alarm = data;
   }
 
-  function pokazArtykul(idx){
-    wyczyscTimeoutyArtykulu();
-    elArtykulTytul.className = 'artykul-tytul';
-    elArtykulLinie.innerHTML = '';
+  // ---------------- ARTYKUŁ (dół ekranu, ręcznie włączany w adminie) ----------------
 
-    if(!artykuly.length){
-      elArtykulTytul.textContent = 'Brak artykułów';
-      elArtykulTytul.classList.add('widoczna');
-      const div = document.createElement('div');
-      div.className = 'linia-artykulu widoczna';
-      div.textContent = 'Dodaj treść w panelu admina.';
-      elArtykulLinie.appendChild(div);
+  function aktualizujSekcjeArtykulow(){
+    const aktywne = artykuly.filter(a => a.aktywny);
+    const klucz = aktywne.map(a => a.id).join(',');
+
+    if(klucz === ostatniKluczArtykulow){
+      elSekcjaArtykul.classList.toggle('widoczna', aktywne.length > 0);
       return;
     }
+    ostatniKluczArtykulow = klucz;
+    elSekcjaArtykul.innerHTML = '';
 
-    const art = artykuly[idx % artykuly.length];
-    elArtykulTytul.textContent = art.tytul || '';
+    if(!aktywne.length){
+      elSekcjaArtykul.classList.remove('widoczna');
+      return;
+    }
+    elSekcjaArtykul.classList.add('widoczna');
 
-    const linie = (art.tresc || '')
-      .split('\n')
-      .map(l => l.trim())
-      .filter(Boolean);
+    aktywne.forEach((art, idx) => {
+      const blok = document.createElement('div');
+      blok.className = 'artykul-blok';
 
-    const elementyLinii = linie.map(tekst => {
-      const div = document.createElement('div');
-      div.className = 'linia-artykulu';
-      div.textContent = tekst;
-      elArtykulLinie.appendChild(div);
-      return div;
+      const tytulEl = document.createElement('div');
+      tytulEl.className = 'artykul-tytul';
+      tytulEl.textContent = art.tytul;
+      blok.appendChild(tytulEl);
+
+      const liniEl = document.createElement('div');
+      liniEl.className = 'artykul-linie';
+      const linie = (art.tresc || '').split('\n').map(l => l.trim()).filter(Boolean);
+      const elementy = linie.map(tekst => {
+        const d = document.createElement('div');
+        d.className = 'linia-artykulu';
+        d.textContent = tekst;
+        liniEl.appendChild(d);
+        return d;
+      });
+      blok.appendChild(liniEl);
+      elSekcjaArtykul.appendChild(blok);
+
+      setTimeout(() => tytulEl.classList.add('widoczna'), 100 + idx * 200);
+      elementy.forEach((el, i) => {
+        setTimeout(() => el.classList.add('widoczna'), 450 + idx * 200 + i * 400);
+      });
     });
-
-    timeoutyArtykulu.push(setTimeout(() => elArtykulTytul.classList.add('widoczna'), 100));
-    elementyLinii.forEach((el, i) => {
-      timeoutyArtykulu.push(setTimeout(() => el.classList.add('widoczna'), 650 + i * 550));
-    });
-
-    const czasDoNastepnego = 650 + linie.length * 550 + 6000;
-    timeoutyArtykulu.push(setTimeout(() => {
-      indeksArtykulu = (idx + 1) % artykuly.length;
-      pokazArtykul(indeksArtykulu);
-    }, czasDoNastepnego));
   }
+
+  // ---------------- ALARM POŻAROWY (pełny ekran, ręcznie włączany w adminie) ----------------
+
+  function pokazAlarm(){
+    elAlarmOverlay.classList.add('widoczny');
+    if(!alarmByloAktywne){
+      alarmByloAktywne = true;
+      elAlarmTytul.className = 'alarm-tytul';
+      elAlarmTytul.textContent = alarm.tytul || 'Zasady postępowania';
+      elAlarmLinie.innerHTML = '';
+      const linie = (alarm.tresc || '').split('\n').map(l => l.trim()).filter(Boolean);
+      const elementy = linie.map(tekst => {
+        const d = document.createElement('div');
+        d.className = 'alarm-linia';
+        d.textContent = tekst;
+        elAlarmLinie.appendChild(d);
+        return d;
+      });
+      setTimeout(() => elAlarmTytul.classList.add('widoczna'), 150);
+      elementy.forEach((el, i) => {
+        setTimeout(() => el.classList.add('widoczna'), 600 + i * 450);
+      });
+    }
+  }
+
+  function ukryjAlarm(){
+    alarmByloAktywne = false;
+    elAlarmOverlay.classList.remove('widoczny');
+  }
+
+  // ---------------- ZEGAR / PLAN LEKCJI ----------------
 
   function wlaczPrzerwaUI(){
     if(stanPrzerwyAktywny) return;
     stanPrzerwyAktywny = true;
     elBelka.classList.add('widoczna');
     elWrap.classList.add('przerwa-aktywna');
-    elSekcjaArtykul.classList.add('widoczna');
-    indeksArtykulu = 0;
-    pokazArtykul(indeksArtykulu);
   }
 
   function wylaczPrzerwaUI(){
@@ -388,11 +479,18 @@
     stanPrzerwyAktywny = false;
     elBelka.classList.remove('widoczna');
     elWrap.classList.remove('przerwa-aktywna');
-    elSekcjaArtykul.classList.remove('widoczna');
-    wyczyscTimeoutyArtykulu();
   }
 
   function tick(){
+    // alarm ma priorytet nad wszystkim
+    if(alarm && alarm.aktywny){
+      pokazAlarm();
+      return;
+    }
+    ukryjAlarm();
+
+    aktualizujSekcjeArtykulow();
+
     const teraz = new Date();
     const sekTeraz = teraz.getHours()*3600 + teraz.getMinutes()*60 + teraz.getSeconds();
 
@@ -435,8 +533,7 @@
       .sort((a,b) => a.s - b.s);
 
     if(przyszle.length){
-      const nast = przyszle[0];
-      renderPrzerwaMiedzy(nast, nast.s - sekTeraz);
+      renderPrzerwaMiedzy(przyszle[0], przyszle[0].s - sekTeraz);
       elNastepnie.textContent = '';
     } else {
       renderKoniecZajec();
@@ -447,14 +544,10 @@
   function renderAktywny(p, pozostalo, postep){
     elPill.className = 'stan-pill';
     elStanTekst.textContent = 'trwa lekcja';
-
     elEtykieta.textContent = p.etykieta;
-
     elCzas.className = 'czas' + (pozostalo <= 120 ? ' pilne' : '');
     elCzas.textContent = formatCzas(pozostalo);
-
     elPodpis.textContent = 'do końca lekcji';
-
     elPasek.style.width = Math.min(100, Math.max(0, postep)) + '%';
   }
 
@@ -502,7 +595,7 @@
     }
   }
 
-  // realtime: natychmiastowe wczytanie po zmianie w adminie
+  // realtime: natychmiastowa reakcja na zmiany z admina
   sb.channel('dzwonki-live')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'dzwonki' }, () => wczytajPlan())
     .subscribe();
@@ -511,13 +604,19 @@
     .on('postgres_changes', { event: '*', schema: 'public', table: 'artykuly' }, () => wczytajArtykuly())
     .subscribe();
 
+  sb.channel('alarm-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'alarm_pozarowy' }, () => wczytajAlarm())
+    .subscribe();
+
   wczytajPlan();
   wczytajArtykuly();
+  wczytajAlarm();
   tick();
   setInterval(tick, 1000);
   // dodatkowe automatyczne odświeżanie danych co 10 sekund (niezależnie od realtime)
   setInterval(wczytajPlan, 10 * 1000);
   setInterval(wczytajArtykuly, 10 * 1000);
+  setInterval(wczytajAlarm, 10 * 1000);
 </script>
 </body>
 </html>
